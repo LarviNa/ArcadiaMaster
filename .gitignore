@@ -1,0 +1,34 @@
+# Dependencias de Node (Frontends)
+node_modules/
+dist/
+
+# Archivos compilados de Java (Backends)
+target/
+*.class
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# Entornos Virtuales e IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Variables de entorno secretas
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Bases de datos y logs
+*.sqlite
+*.log
+usuarios_log.txt
+
+# Mac
+.DS_Store

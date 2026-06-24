@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: arcadia-mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_ROOT_PASSWORD: ""
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: arcadia-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672" # Puerto para comunicación AMQP
+      - "15672:15672" # Puerto para el panel de administración
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  ms-usuarios:
+    build: ./backend/ms-usuarios
+    container_name: ms-usuarios
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=
+    ports:
+      - "8085:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  ms-comics:
+    build: ./backend/ms-comics
+    container_name: ms-comics
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=
+    ports:
+      - "8081:8081"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  ms-ventas:
+    build: ./backend/ms-ventas
+    container_name: ms-ventas
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    ports:
+      - "8082:8082"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      - rabbitmq
+
+  api-gateway:
+    build: ./backend/api-gateway
+    container_name: api-gateway
+    environment:
+      - MS_USUARIOS_URL=http://ms-usuarios:8085
+      - MS_COMICS_URL=http://ms-comics:8081
+      - MS_VENTAS_URL=http://ms-ventas:8082
+    ports:
+      - "8083:8083"
+    depends_on:
+      - ms-usuarios
+      - ms-comics
+      - ms-ventas
+
+  frontend-admin:
+    build:
+      context: ./Frontend/Arcadia-FrontEnd-Admin
+      args:
+        - VITE_API_URL=http://100.49.168.55:8083/api/usuarios
+        - VITE_COMICS_API_URL=http://100.49.168.55:8083/api/comics
+        - VITE_VENTAS_API_URL=http://100.49.168.55:8083/orders
+    container_name: frontend-admin
+    ports:
+      - "5174:80"
+
+  frontend-clientes:
+    build:
+      context: ./Frontend/Arcadia-FrontEnd-Clientes
+      args:
+        - VITE_API_GATEWAY_URL=http://100.49.168.55:8083
+        - VITE_LOGIN_URL=http://100.49.168.55:5173
+    container_name: frontend-clientes
+    ports:
+      - "3001:80"
+
+  frontend-login:
+    build:
+      context: ./Frontend/Arcadia-FrontEnd-Login
+      args:
+        - VITE_API_GATEWAY_URL=http://100.49.168.55:8083
+        - VITE_LOGIN_URL=http://100.49.168.55:5173
+        - VITE_ADMIN_URL=http://100.49.168.55:5174
+        - VITE_CLIENTES_URL=http://100.49.168.55:3001
+    container_name: frontend-login
+    ports:
+      - "5173:80"
+
+volumes:
+  mysql-data:
+  rabbitmq-data:
