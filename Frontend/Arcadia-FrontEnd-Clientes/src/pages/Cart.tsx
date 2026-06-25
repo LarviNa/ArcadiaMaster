@@ -1,9 +1,14 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Plus, Minus, Trash2, ArrowLeft } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 
 const Cart = () => {
   const { items, total, updateQuantity, removeFromCart, clearCart } = useCart()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const navigate = useNavigate()
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -11,6 +16,74 @@ const Cart = () => {
     } else {
       updateQuantity(id, newQuantity)
     }
+  }
+
+  const handleCheckout = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        throw new Error('Debes iniciar sesión para comprar')
+      }
+      
+      const user = JSON.parse(userStr)
+      const token = localStorage.getItem('token')
+      
+      const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8083'
+      
+      const orderData = {
+        userId: user.id,
+        totalAmount: total + (total >= 50 ? 0 : 5.99) + (total * 0.08),
+        items: items.map(i => ({
+          comicId: i.id,
+          quantity: i.quantity
+        })),
+        cardNumber: "1234567812345678",
+        expirationDate: "12/29",
+        ccv: "123"
+      }
+
+      const response = await fetch(`${gatewayUrl}/orders/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(orderData)
+      })
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.message || errData.error || 'Error al procesar el pago')
+      }
+
+      setSuccess(true)
+      clearCart()
+      
+      setTimeout(() => {
+        navigate('/')
+      }, 3000)
+
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center py-16 bg-white rounded-lg shadow-sm">
+          <div className="text-6xl mb-4">🎉</div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">¡Compra Exitosa!</h1>
+          <p className="text-gray-600 mb-8">Tu pedido ha sido procesado correctamente. Gracias por tu compra.</p>
+          <p className="text-sm text-gray-400">Redirigiendo al inicio...</p>
+        </div>
+      </div>
+    )
   }
 
   if (items.length === 0) {
@@ -135,6 +208,12 @@ const Cart = () => {
           <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
             <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-3 mb-6">
               <div className="flex justify-between text-gray-600">
                 <span>Subtotal</span>
@@ -166,8 +245,16 @@ const Cart = () => {
               </div>
             )}
 
-            <button className="w-full btn-primary py-3 mb-3">
-              Proceed to Checkout
+            <button 
+              onClick={handleCheckout}
+              disabled={loading}
+              className="w-full btn-primary py-3 mb-3 flex justify-center items-center"
+            >
+              {loading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              ) : (
+                'Proceed to Checkout'
+              )}
             </button>
 
             <p className="text-xs text-gray-500 text-center">
