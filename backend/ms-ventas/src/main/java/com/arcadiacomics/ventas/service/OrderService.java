@@ -28,7 +28,7 @@ public class OrderService {
         Order order = new Order();
         order.setUserId(request.getUserId());
         order.setTotalAmount(request.getTotalAmount());
-        order.setStatus(OrderStatus.PENDING); // Inicialmente PENDING
+        order.setStatus(OrderStatus.PAID); // Simulamos pago exitoso inmediato
 
         List<OrderItem> items = request.getItems().stream()
                 .map(dto -> new OrderItem(dto.getComicId(), dto.getQuantity()))
@@ -37,8 +37,18 @@ public class OrderService {
 
         Order savedOrder = orderRepository.save(order);
 
-        // Ya no lanzamos el evento acá porque está PENDING.
-        // El evento se debería lanzar cuando se confirme el pago y pase a PAID.
+        // Lanzamos el evento de pago para que la simulación de notificación lo reciba
+        OrderEventDTO eventDTO = new OrderEventDTO(
+                savedOrder.getId(),
+                savedOrder.getUserId(),
+                savedOrder.getItems().stream().map(i -> {
+                    com.arcadiacomics.ventas.dto.OrderItemDTO dto = new com.arcadiacomics.ventas.dto.OrderItemDTO();
+                    dto.setComicId(i.getComicId());
+                    dto.setQuantity(i.getQuantity());
+                    return dto;
+                }).collect(Collectors.toList())
+        );
+        eventPublisher.publishOrderPaidEvent(eventDTO);
 
         return new OrderResponse(savedOrder);
     }
