@@ -44,24 +44,22 @@ CREATE TABLE IF NOT EXISTS comics (
     editorial VARCHAR(255),
     precio DECIMAL(10,2),
     stock INT,
-    imagen_url VARCHAR(500),
-    fecha_creacion DATETIME,
-    fecha_actualizacion DATETIME
+    imagen_url VARCHAR(500)
 );
 
-INSERT IGNORE INTO comics (id, titulo, autor, editorial, precio, stock, imagen_url, fecha_creacion, fecha_actualizacion) VALUES
-('c001', 'The Amazing Spider-Man #1',      'Stan Lee',          'Marvel Comics',   12990, 15, 'https://upload.wikimedia.org/wikipedia/en/3/39/TheAmazingSpider-Man_1.jpg',       NOW(), NOW()),
-('c002', 'Batman: The Dark Knight Returns','Frank Miller',      'DC Comics',       14990, 10, 'https://upload.wikimedia.org/wikipedia/en/5/5a/Dark_knight_returns.jpg',          NOW(), NOW()),
-('c003', 'X-Men: Days of Future Past',     'Chris Claremont',  'Marvel Comics',   11990, 20, 'https://upload.wikimedia.org/wikipedia/en/3/39/XMen141.jpg',                     NOW(), NOW()),
-('c004', 'Watchmen',                       'Alan Moore',       'DC Comics',       18990,  8, 'https://upload.wikimedia.org/wikipedia/en/a/a2/Watchmen%2C_issue_1.jpg',         NOW(), NOW()),
-('c005', 'Naruto Vol. 1',                  'Masashi Kishimoto','Shueisha',         8990, 25, 'https://upload.wikimedia.org/wikipedia/en/9/94/NarutoCoverTankobon1.jpg',        NOW(), NOW()),
-('c006', 'Attack on Titan Vol. 1',         'Hajime Isayama',   'Kodansha',         9990, 18, 'https://upload.wikimedia.org/wikipedia/en/d/d6/AttackonTitan1.jpg',              NOW(), NOW()),
-('c007', 'One Piece Vol. 1',               'Eiichiro Oda',     'Shueisha',         8990, 30, 'https://upload.wikimedia.org/wikipedia/en/6/6d/One_Piece%2C_Volume_61_Cover_%28Japanese%29.jpg', NOW(), NOW()),
-('c008', 'Avengers: Infinity War',         'Jim Starlin',      'Marvel Comics',   13990, 12, 'https://upload.wikimedia.org/wikipedia/en/e/e2/Avengers_Infinity_Gauntlet.jpg', NOW(), NOW()),
-('c009', 'Batman: Year One',               'Frank Miller',     'DC Comics',       11990, 14, 'https://upload.wikimedia.org/wikipedia/en/4/44/Batman_Year_One.jpg',             NOW(), NOW()),
-('c010', 'Dragon Ball Vol. 1',             'Akira Toriyama',   'Shueisha',         8990, 22, 'https://upload.wikimedia.org/wikipedia/en/7/7e/DragonBallVolume1.jpg',           NOW(), NOW()),
-('c011', 'Iron Man: Extremis',             'Warren Ellis',     'Marvel Comics',   12990,  9, 'https://upload.wikimedia.org/wikipedia/en/8/81/Iron_man_extremis.jpg',           NOW(), NOW()),
-('c012', 'Demon Slayer Vol. 1',            'Koyoharu Gotouge', 'Shueisha',         9990, 20, 'https://upload.wikimedia.org/wikipedia/en/4/45/Kimetsu_no_Yaiba_Volume_1.jpg',  NOW(), NOW());
+INSERT IGNORE INTO comics (id, titulo, autor, editorial, precio, stock, imagen_url) VALUES
+('c001', 'The Amazing Spider-Man #1',      'Stan Lee',          'Marvel Comics',   12990, 15, 'https://upload.wikimedia.org/wikipedia/en/3/39/TheAmazingSpider-Man_1.jpg'),
+('c002', 'Batman: The Dark Knight Returns','Frank Miller',      'DC Comics',       14990, 10, 'https://upload.wikimedia.org/wikipedia/en/5/5a/Dark_knight_returns.jpg'),
+('c003', 'X-Men: Days of Future Past',     'Chris Claremont',  'Marvel Comics',   11990, 20, 'https://upload.wikimedia.org/wikipedia/en/3/39/XMen141.jpg'),
+('c004', 'Watchmen',                       'Alan Moore',       'DC Comics',       18990,  8, 'https://upload.wikimedia.org/wikipedia/en/a/a2/Watchmen%2C_issue_1.jpg'),
+('c005', 'Naruto Vol. 1',                  'Masashi Kishimoto','Shueisha',         8990, 25, 'https://upload.wikimedia.org/wikipedia/en/9/94/NarutoCoverTankobon1.jpg'),
+('c006', 'Attack on Titan Vol. 1',         'Hajime Isayama',   'Kodansha',         9990, 18, 'https://upload.wikimedia.org/wikipedia/en/d/d6/AttackonTitan1.jpg'),
+('c007', 'One Piece Vol. 1',               'Eiichiro Oda',     'Shueisha',         8990, 30, 'https://upload.wikimedia.org/wikipedia/en/6/6d/One_Piece%2C_Volume_61_Cover_%28Japanese%29.jpg'),
+('c008', 'Avengers: Infinity War',         'Jim Starlin',      'Marvel Comics',   13990, 12, 'https://upload.wikimedia.org/wikipedia/en/e/e2/Avengers_Infinity_Gauntlet.jpg'),
+('c009', 'Batman: Year One',               'Frank Miller',     'DC Comics',       11990, 14, 'https://upload.wikimedia.org/wikipedia/en/4/44/Batman_Year_One.jpg'),
+('c010', 'Dragon Ball Vol. 1',             'Akira Toriyama',   'Shueisha',         8990, 22, 'https://upload.wikimedia.org/wikipedia/en/7/7e/DragonBallVolume1.jpg'),
+('c011', 'Iron Man: Extremis',             'Warren Ellis',     'Marvel Comics',   12990,  9, 'https://upload.wikimedia.org/wikipedia/en/8/81/Iron_man_extremis.jpg'),
+('c012', 'Demon Slayer Vol. 1',            'Koyoharu Gotouge', 'Shueisha',         9990, 20, 'https://upload.wikimedia.org/wikipedia/en/4/45/Kimetsu_no_Yaiba_Volume_1.jpg');
 
 SELECT CONCAT('Comics insertados: ', COUNT(*)) AS resultado FROM comics;
 
