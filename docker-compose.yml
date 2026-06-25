@@ -69,7 +69,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-      - rabbitmq
+      rabbitmq:
+        condition: service_started
 
   api-gateway:
     build: ./backend/api-gateway
