@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function Register() {
+function Register({ onBack }) {
   const [formData, setFormData] = useState({
     nombre: '',
     email: '',
@@ -56,10 +56,13 @@ function Register() {
       }
 
       setSuccess(true)
-      const loginUrl = import.meta.env.VITE_LOGIN_URL || 'http://localhost:5173';
       setTimeout(() => {
-        window.location.href = loginUrl
-      }, 2000)
+        if (onBack) {
+          onBack()
+        } else {
+          window.location.href = import.meta.env.VITE_LOGIN_URL || 'http://localhost:5173'
+        }
+      }, 1500)
 
     } catch (err) {
       setError(err.message)
@@ -69,7 +72,11 @@ function Register() {
   }
 
   const handleBackToLogin = () => {
-    window.location.href = import.meta.env.VITE_LOGIN_URL || 'http://localhost:5173'
+    if (onBack) {
+      onBack()
+    } else {
+      window.location.href = import.meta.env.VITE_LOGIN_URL || 'http://localhost:5173'
+    }
   }
 
   if (success) {
