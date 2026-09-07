@@ -1,0 +1,29 @@
+INSTALAR MAVEN - GUÍA PARA ESTUDIANTES
+==========================================
+
+OPCIÓN 1: DESCARGAR MAVEN MANUALMENTE
+1. Ve a: https://maven.apache.org/download.cgi
+2. Descarga "Binary zip archive" (apache-maven-x.x.x-bin.zip)
+3. Descomprime en C:\Program Files\Apache\maven
+4. Agrega al PATH:
+   - Windows + R → escribe "sysdm.cpl"
+   - Pestaña "Opciones avanzadas"
+   - "Variables de entorno"
+   - "Variables del sistema" → "Path" → "Editar"
+   - Agrega: C:\Program Files\Apache\maven\bin
+5. Reinicia tu PC
+
+OPCIÓN 2: USAR MAVEN DEL IDE (Más fácil)
+Si usas Eclipse o IntelliJ:
+- Eclipse: Viene con Maven integrado
+- IntelliJ: Viene con Maven integrado
+
+OPCIÓN 3: DESCARGAR SPRING TOOL SUITE (Lo más fácil para estudiantes)
+1. Ve a: https://spring.io/tools
+2. Descarga Spring Tool Suite (STS)
+3. Viene con Maven y Spring Boot integrados
+4. Importa el proyecto y ejecuta directamente
+
+VERIFICACIÓN:
+Abre CMD y escribe: mvn --version
+Si muestra la versión, ¡funcionó!

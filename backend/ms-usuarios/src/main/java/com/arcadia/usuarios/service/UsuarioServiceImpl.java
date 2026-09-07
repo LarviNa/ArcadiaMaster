@@ -1,0 +1,190 @@
+package com.arcadia.usuarios.service;
+
+import com.arcadia.usuarios.model.Usuario;
+import com.arcadia.usuarios.repository.UsuarioRepository;
+import com.arcadia.usuarios.security.AzureTokenValidator;
+import com.arcadia.usuarios.security.AzureTokenValidator.AzureUserInfo;
+import com.arcadia.usuarios.security.JwtUtils;
+import com.nimbusds.jwt.JWTClaimsSet;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+@Transactional
+public class UsuarioServiceImpl implements UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder   passwordEncoder;
+    private final JwtUtils          jwtUtils;
+    private final AzureTokenValidator azureTokenValidator;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Usuario> obtenerTodos() {
+        return usuarioRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Usuario> obtenerPorId(String id) {
+        return usuarioRepository.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Usuario> obtenerPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
+    @Override
+    public Usuario registrar(Usuario usuario) {
+        log.info("Registrando usuario: {}", usuario.getEmail());
+
+        boolean emailExists = usuarioRepository.existsByEmail(usuario.getEmail());
+        log.info("Verificando si email existe: {} = {}", usuario.getEmail(), emailExists);
+
+        if (emailExists) {
+            throw new RuntimeException("El email ya está registrado: " + usuario.getEmail());
+        }
+
+        // Hashear la contraseña antes de guardar
+        log.info("Hasheando contraseña para usuario: {}", usuario.getEmail());
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        log.info("Contraseña hasheada para usuario: {}", usuario.getEmail());
+
+        log.info("Guardando usuario en base de datos: {}", usuario.getEmail());
+        Usuario saved = usuarioRepository.save(usuario);
+        log.info("Usuario guardado exitosamente: {}", saved.getEmail());
+
+        return saved;
+    }
+
+    @Override
+    public Usuario actualizar(String id, Usuario usuarioActualizado) {
+        return usuarioRepository.findById(id)
+                .map(existente -> {
+                    existente.setNombre(usuarioActualizado.getNombre());
+                    existente.setRol(usuarioActualizado.getRol());
+                    existente.setFotoPerfilUri(usuarioActualizado.getFotoPerfilUri());
+
+                    // Solo re-hashear si se envió una nueva contraseña
+                    if (usuarioActualizado.getPassword() != null &&
+                            !usuarioActualizado.getPassword().isBlank()) {
+                        existente.setPassword(
+                                passwordEncoder.encode(usuarioActualizado.getPassword()));
+                    }
+
+                    return usuarioRepository.save(existente);
+                })
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + id));
+    }
+
+    @Override
+    public void eliminar(String id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new RuntimeException("Usuario no encontrado: " + id);
+        }
+        usuarioRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeEmail(String email) {
+        return usuarioRepository.existsByEmail(email);
+    }
+
+    /**
+     * Verifica credenciales con BCrypt y devuelve un Map con el token JWT
+     * y los datos básicos del usuario, o empty si las credenciales son inválidas.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Map<String, Object>> login(String email, String password) {
+        log.info("Intento de login: {}", email);
+
+        return usuarioRepository.findByEmail(email)
+                .filter(u -> passwordEncoder.matches(password, u.getPassword()))
+                .map(u -> {
+                    String token = jwtUtils.generarToken(u.getEmail(), u.getRol(), u.getId());
+                    return Map.<String, Object>of(
+                            "token",  token,
+                            "tipo",   "Bearer",
+                            "userId", u.getId(),
+                            "nombre", u.getNombre(),
+                            "email",  u.getEmail(),
+                            "rol",    u.getRol()
+                    );
+                });
+    }
+
+    /**
+     * Valida el token de Azure Entra ID, aprovisiona/sincroniza el usuario en la BD MySQL
+     * y genera un token JWT de sesión para el ecosistema Arcadia.
+     */
+    @Override
+    public Optional<Map<String, Object>> loginConAzure(String idToken) {
+        log.info("Intento de login con token de Azure Entra ID");
+
+        JWTClaimsSet claims = azureTokenValidator.validarToken(idToken);
+        if (claims == null) {
+            log.warn("Token de Azure no válido o expirado");
+            return Optional.empty();
+        }
+
+        AzureUserInfo info = azureTokenValidator.extraerInformacion(claims);
+        if (info == null || info.getEmail() == null || info.getEmail().isBlank()) {
+            log.warn("No se pudo extraer email del token de Azure");
+            return Optional.empty();
+        }
+
+        log.info("Usuario autenticado con Microsoft: {} (Rol claim: {})", info.getEmail(), info.getRol());
+
+        // Buscar o auto-registrar usuario en MySQL
+        Usuario usuario = usuarioRepository.findByEmail(info.getEmail())
+                .map(existente -> {
+                    boolean modificado = false;
+                    if (existente.getNombre() == null || existente.getNombre().isBlank()) {
+                        existente.setNombre(info.getNombre());
+                        modificado = true;
+                    }
+                    // Si en Azure tiene rol Admin, asegurar que en BD tenga Admin
+                    if ("Admin".equalsIgnoreCase(info.getRol()) && !"Admin".equalsIgnoreCase(existente.getRol())) {
+                        existente.setRol("Admin");
+                        modificado = true;
+                    }
+                    return modificado ? usuarioRepository.save(existente) : existente;
+                })
+                .orElseGet(() -> {
+                    log.info("Auto-registrando nuevo usuario desde Microsoft Entra ID: {}", info.getEmail());
+                    Usuario nuevo = new Usuario();
+                    nuevo.setEmail(info.getEmail());
+                    nuevo.setNombre(info.getNombre());
+                    // Clave aleatoria hasheada ya que su autenticación es delegada a Microsoft
+                    nuevo.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+                    nuevo.setRol(info.getRol());
+                    return usuarioRepository.save(nuevo);
+                });
+
+        String arcadiaToken = jwtUtils.generarToken(usuario.getEmail(), usuario.getRol(), usuario.getId());
+
+        return Optional.of(Map.of(
+                "token", arcadiaToken,
+                "tipo", "Bearer",
+                "userId", usuario.getId(),
+                "nombre", usuario.getNombre(),
+                "email", usuario.getEmail(),
+                "rol", usuario.getRol(),
+                "azureToken", idToken
+        ));
+    }
+}

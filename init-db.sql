@@ -1,0 +1,2 @@
+CREATE DATABASE IF NOT EXISTS arcadia_ventas;
+CREATE DATABASE IF NOT EXISTS arcadia_usuarios;
