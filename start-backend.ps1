@@ -6,7 +6,7 @@ Write-Host ""
 # Función para iniciar un microservicio
 function Start-Microservice ($Name, $Path, $Port) {
     Write-Host "Iniciando $Name en el puerto $Port..." -ForegroundColor Yellow
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$Path'; .\mvnw.cmd spring-boot:run"
+    Start-Process powershell -ArgumentList "-NoExit", "-Command", "`$env:DB_PASSWORD='root'; cd '$PSScriptRoot\$Path'; .\mvnw.cmd spring-boot:run"
 }
 
 Start-Microservice -Name "Microservicio Usuarios" -Path "backend\ms-usuarios" -Port 8085

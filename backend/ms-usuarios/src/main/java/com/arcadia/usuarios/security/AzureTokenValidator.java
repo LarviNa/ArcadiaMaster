@@ -127,6 +127,10 @@ public class AzureTokenValidator {
                 azureId = claims.getSubject();
             }
 
-        return new AzureUserInfo(email, nombre, rol, azureId);
+            return new AzureUserInfo(email, nombre, rol, azureId);
+        } catch (Exception e) {
+            log.error("Error al extraer información del token de Azure: {}", e.getMessage());
+            return null;
+        }
     }
 }
