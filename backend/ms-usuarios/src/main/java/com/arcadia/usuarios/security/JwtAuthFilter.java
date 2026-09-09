@@ -75,7 +75,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // Contraseña aleatoria — la autenticación real es delegada a Microsoft
             nuevo.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
             nuevo.setRol(info.getRol());
+            nuevo.setProveedor("MICROSOFT");
+            nuevo.setEsMicrosoft(true);
             usuarioRepository.save(nuevo);
+        } else {
+            usuarioRepository.findByEmail(info.getEmail()).ifPresent(existente -> {
+                if (!"MICROSOFT".equalsIgnoreCase(existente.getProveedor()) || !Boolean.TRUE.equals(existente.getEsMicrosoft())) {
+                    existente.setProveedor("MICROSOFT");
+                    existente.setEsMicrosoft(true);
+                    usuarioRepository.save(existente);
+                }
+            });
         }
     }
 

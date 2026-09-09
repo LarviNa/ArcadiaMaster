@@ -62,6 +62,13 @@ public class UsuarioServiceImpl implements UsuarioService {
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         log.info("Contraseña hasheada para usuario: {}", usuario.getEmail());
 
+        if (usuario.getProveedor() == null) {
+            usuario.setProveedor("LOCAL");
+        }
+        if (usuario.getEsMicrosoft() == null) {
+            usuario.setEsMicrosoft(false);
+        }
+
         log.info("Guardando usuario en base de datos: {}", usuario.getEmail());
         Usuario saved = usuarioRepository.save(usuario);
         log.info("Usuario guardado exitosamente: {}", saved.getEmail());
@@ -157,6 +164,12 @@ public class UsuarioServiceImpl implements UsuarioService {
                         existente.setNombre(info.getNombre());
                         modificado = true;
                     }
+                    // Marcar que el usuario se autentica con Microsoft
+                    if (!"MICROSOFT".equalsIgnoreCase(existente.getProveedor()) || !Boolean.TRUE.equals(existente.getEsMicrosoft())) {
+                        existente.setProveedor("MICROSOFT");
+                        existente.setEsMicrosoft(true);
+                        modificado = true;
+                    }
                     // Si en Azure tiene rol Admin, asegurar que en BD tenga Admin
                     if ("Admin".equalsIgnoreCase(info.getRol()) && !"Admin".equalsIgnoreCase(existente.getRol())) {
                         existente.setRol("Admin");
@@ -172,6 +185,8 @@ public class UsuarioServiceImpl implements UsuarioService {
                     // Clave aleatoria hasheada ya que su autenticación es delegada a Microsoft
                     nuevo.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                     nuevo.setRol(info.getRol());
+                    nuevo.setProveedor("MICROSOFT");
+                    nuevo.setEsMicrosoft(true);
                     return usuarioRepository.save(nuevo);
                 });
 

@@ -67,6 +67,68 @@
 
 .btn-refresh:hover { background: #f5f4f0; }
 
+/* ── Toolbar (Buscador y Filtros) ── */
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.toolbar-section .search-bar {
+  margin-bottom: 0;
+}
+
+.filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  background: #ffffff;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5f5e5a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.filter-pill:hover {
+  background: #f5f4f0;
+  color: #1a1a2e;
+}
+
+.filter-pill.active {
+  background: #1a1a2e;
+  color: #ffffff;
+  border-color: #1a1a2e;
+}
+
+.filter-pill.pill-ms.active {
+  background: #0078d4;
+  color: #ffffff;
+  border-color: #0078d4;
+}
+
+.subtitle-highlight {
+  font-weight: 600;
+}
+
+.subtitle-highlight.ms-color {
+  color: #0078d4;
+}
+
 /* ── Buscador ── */
 .search-bar { margin-bottom: 1.25rem; }
 
@@ -164,6 +226,37 @@
 .rol-badge.rol-admin      { background: #e6f1fb; color: #0c447c; }
 .rol-badge.rol-cliente    { background: #f1efe8; color: #5f5e5a; }
 .rol-badge.rol-moderador  { background: #faeeda; color: #633806; }
+
+/* ── Auth badge (Microsoft / Local) ── */
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.auth-badge.auth-microsoft {
+  background: #ebf3fc;
+  color: #005a9e;
+  border: 1px solid rgba(0, 120, 212, 0.25);
+}
+
+.auth-badge.auth-local {
+  background: #f4f4f5;
+  color: #52525b;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.auth-icon-ms {
+  flex-shrink: 0;
+}
+
+.auth-icon-local {
+  flex-shrink: 0;
+}
 
 /* ── Date ── */
 .date-cell { color: #888780; font-size: 13px; }

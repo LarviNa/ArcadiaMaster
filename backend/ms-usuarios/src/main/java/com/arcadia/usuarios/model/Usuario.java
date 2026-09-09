@@ -43,6 +43,12 @@ public class Usuario {
     
     @Column(name = "foto_perfil_uri", columnDefinition = "TEXT")
     private String fotoPerfilUri;
+
+    @Column(name = "proveedor", length = 50)
+    private String proveedor = "LOCAL";
+
+    @Column(name = "es_microsoft")
+    private Boolean esMicrosoft = false;
     
     @CreationTimestamp
     @Column(name = "fecha_registro", updatable = false)
