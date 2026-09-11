@@ -65,8 +65,9 @@ export function AuthBadge({ user }) {
   );
 }
 
-function UserRow({ user, onDelete }) {
+function UserRow({ user, onDelete, onRoleChange }) {
   const [confirmando, setConfirmando] = useState(false);
+  const [cambiandoRol, setCambiandoRol] = useState(false);
 
   const handleDelete = async () => {
     if (!confirmando) {
@@ -77,6 +78,16 @@ function UserRow({ user, onDelete }) {
       await onDelete(user.id);
     } catch {
       setConfirmando(false);
+    }
+  };
+
+  const handleToggleRol = async () => {
+    const nuevoRol = user.rol?.toLowerCase() === "admin" ? "Cliente" : "Admin";
+    try {
+      setCambiandoRol(true);
+      await onRoleChange(user.id, { ...user, rol: nuevoRol });
+    } finally {
+      setCambiandoRol(false);
     }
   };
 
@@ -92,9 +103,15 @@ function UserRow({ user, onDelete }) {
         </div>
       </td>
       <td>
-        <span className={`rol-badge rol-${user.rol?.toLowerCase()}`}>
-          {user.rol ?? "Cliente"}
-        </span>
+        <button
+          type="button"
+          className={`rol-badge rol-${user.rol?.toLowerCase()} rol-clickable`}
+          onClick={handleToggleRol}
+          disabled={cambiandoRol}
+          title={`Clic para alternar rol a ${user.rol?.toLowerCase() === "admin" ? "Cliente" : "Admin"}`}
+        >
+          {cambiandoRol ? "..." : (user.rol ?? "Cliente")}
+        </button>
       </td>
       <td>
         <AuthBadge user={user} />
@@ -152,6 +169,15 @@ export default function Usuarios() {
   const handleEliminar = async (id) => {
     await usuariosApi.eliminar(id);
     setUsuarios((prev) => prev.filter((u) => u.id !== id));
+  };
+
+  const handleRoleChange = async (id, updatedUser) => {
+    try {
+      const resp = await usuariosApi.actualizar(id, updatedUser);
+      setUsuarios((prev) => prev.map((u) => (u.id === id ? { ...u, rol: resp.rol } : u)));
+    } catch (err) {
+      alert("Error al actualizar rol: " + err.message);
+    }
   };
 
   const msCount = usuarios.filter(
@@ -271,7 +297,12 @@ export default function Usuarios() {
                 </tr>
               ) : (
                 usuariosFiltrados.map((u) => (
-                  <UserRow key={u.id} user={u} onDelete={handleEliminar} />
+                  <UserRow
+                    key={u.id}
+                    user={u}
+                    onDelete={handleEliminar}
+                    onRoleChange={handleRoleChange}
+                  />
                 ))
               )}
             </tbody>

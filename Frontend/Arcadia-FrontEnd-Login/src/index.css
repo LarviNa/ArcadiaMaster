@@ -409,6 +409,42 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 500;
 }
 
+.msal-badge.msal-badge-admin {
+  background: rgba(147, 51, 234, 0.25);
+  color: #c084fc;
+  border-color: rgba(168, 85, 247, 0.5);
+  font-weight: 600;
+}
+
+.msal-badge.msal-badge-cliente {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+  font-weight: 600;
+}
+
+.msal-role-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.msal-role-card .role-title {
+  color: var(--text-muted);
+}
+
+.msal-role-card .role-val {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .msal-tenant-info {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid var(--border-color);
@@ -451,6 +487,33 @@ h1, h2, h3, h4, h5, h6 {
 
 .msal-nav-btn.admin-btn:hover {
   box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
+}
+
+.msal-nav-btn.btn-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: #334155 !important;
+  border-color: #475569 !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.msal-nav-btn.btn-disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.msal-role-warning {
+  margin-top: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 0.5rem;
+  color: #fbbf24;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  text-align: left;
 }
 
 .msal-tokens-inspector {

@@ -227,6 +227,23 @@
 .rol-badge.rol-cliente    { background: #f1efe8; color: #5f5e5a; }
 .rol-badge.rol-moderador  { background: #faeeda; color: #633806; }
 
+.rol-badge.rol-clickable {
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.rol-badge.rol-clickable:hover {
+  transform: translateY(-1px);
+  filter: brightness(0.95);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.rol-badge.rol-clickable:active {
+  transform: translateY(0);
+}
+
 /* ── Auth badge (Microsoft / Local) ── */
 .auth-badge {
   display: inline-flex;

@@ -192,14 +192,17 @@ public class UsuarioServiceImpl implements UsuarioService {
 
         String arcadiaToken = jwtUtils.generarToken(usuario.getEmail(), usuario.getRol(), usuario.getId());
 
-        return Optional.of(Map.of(
-                "token", arcadiaToken,
-                "tipo", "Bearer",
-                "userId", usuario.getId(),
-                "nombre", usuario.getNombre(),
-                "email", usuario.getEmail(),
-                "rol", usuario.getRol(),
-                "azureToken", idToken
-        ));
+        Map<String, Object> resp = new java.util.HashMap<>();
+        resp.put("token", arcadiaToken);
+        resp.put("tipo", "Bearer");
+        resp.put("userId", usuario.getId());
+        resp.put("nombre", usuario.getNombre());
+        resp.put("email", usuario.getEmail());
+        resp.put("rol", usuario.getRol());
+        resp.put("proveedor", usuario.getProveedor());
+        resp.put("esMicrosoft", usuario.getEsMicrosoft());
+        resp.put("azureToken", idToken);
+
+        return Optional.of(resp);
     }
 }

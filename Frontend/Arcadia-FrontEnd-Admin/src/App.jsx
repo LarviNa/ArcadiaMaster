@@ -25,6 +25,7 @@ function renderPage(id) {
 export default function App() {
   const [activeTab, setActiveTab] = useState("inicio");
   const [authorized, setAuthorized] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     // 1. Ingest URL query parameters (SSO from login portal)
@@ -45,7 +46,6 @@ export default function App() {
     const userStr = localStorage.getItem("user");
 
     if (!token || !userStr) {
-      // Redirect to login portal
       window.location.href = "http://localhost:5173";
       return;
     }
@@ -53,10 +53,13 @@ export default function App() {
     try {
       const user = JSON.parse(userStr);
       if (user.rol?.toLowerCase() !== "admin") {
-        alert("Acceso denegado: Se requiere rol de Administrador.");
-        window.location.href = "http://localhost:5173";
+        console.warn("Acceso denegado: El usuario no posee rol Admin", user);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "http://localhost:5173/?error=no_admin_role";
         return;
       }
+      setCurrentUser(user);
       setAuthorized(true);
     } catch (e) {
       localStorage.removeItem("token");
@@ -79,6 +82,10 @@ export default function App() {
     );
   }
 
+  const isMicrosoft =
+    currentUser?.esMicrosoft === true ||
+    currentUser?.proveedor?.toUpperCase() === "MICROSOFT";
+
   return (
     <div className="admin-shell">
       <header className="topbar">
@@ -86,13 +93,7 @@ export default function App() {
           <div className="brand-dot" />
           AdminPanel
         </div>
-        <button
-          onClick={handleLogout}
-          className="logout-button"
-          title="Cerrar sesión"
-        >
-          Cerrar Sesión
-        </button>
+
         <nav className="nav-tabs">
           {TABS.map((tab) => (
             <button
@@ -105,6 +106,33 @@ export default function App() {
             </button>
           ))}
         </nav>
+
+        <div className="topbar-user-section">
+          {currentUser && (
+            <div className="topbar-user-badge" title={currentUser.email}>
+              <span className="topbar-user-name">{currentUser.nombre || currentUser.email}</span>
+              <span className="topbar-user-role">ADMIN</span>
+              {isMicrosoft && (
+                <span className="topbar-ms-tag" title="Autenticado con Microsoft Entra ID">
+                  <svg viewBox="0 0 21 21" width="12" height="12">
+                    <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+                    <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+                    <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+                    <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+                  </svg>
+                  Microsoft
+                </span>
+              )}
+            </div>
+          )}
+          <button
+            onClick={handleLogout}
+            className="logout-button"
+            title="Cerrar sesión"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
       </header>
 
       <main className="content-area">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react'
 import { MicrosoftLoginButton } from './components/MicrosoftLoginButton'
 import { MicrosoftProfile } from './components/MicrosoftProfile'
@@ -12,6 +12,15 @@ export default function App({ isAuthConfigured = false, initError = null }) {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
   const [redirectToAdmin, setRedirectToAdmin] = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const errParam = params.get('error')
+    if (errParam === 'no_admin_role' || errParam === 'unauthorized_role') {
+      setError('Acceso denegado al Panel de Administración: Tu cuenta no tiene asignado el rol de Administrador.')
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }, [])
 
   const handleLogin = async (e) => {
     e.preventDefault()

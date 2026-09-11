@@ -10,6 +10,8 @@ export function MicrosoftProfile() {
   const [error, setError] = useState(null)
   const [showTokens, setShowTokens] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
+  const [userRole, setUserRole] = useState('Cliente')
+  const [syncingBackend, setSyncingBackend] = useState(true)
 
   const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
   const clientesUrl = import.meta.env.VITE_CLIENTES_URL || 'http://localhost:3001'
@@ -24,6 +26,7 @@ export function MicrosoftProfile() {
 
     async function loadTokens() {
       try {
+        setSyncingBackend(true)
         const result = await instance.acquireTokenSilent({
           ...loginRequest,
           account,
@@ -36,28 +39,32 @@ export function MicrosoftProfile() {
           })
           setError(null)
 
-          // Sincronizar automáticamente la sesión con localStorage para Arcadia
+          // 1. Determinar rol inicial desde claims de Azure Entra ID (App Roles)
           const roles = account.idTokenClaims?.roles || []
-          const hasAdminRole = roles.includes('Admin') || roles.includes('admin')
-          const defaultRole = hasAdminRole ? 'Admin' : 'Cliente'
+          const hasAdminRole = roles.some(
+            (r) => typeof r === 'string' && (r.toLowerCase() === 'admin' || r.toLowerCase() === 'administrador')
+          )
+          let detectedRole = hasAdminRole ? 'Admin' : 'Cliente'
 
           let userObj = {
             id: account.localAccountId || account.homeAccountId || 'msal-user',
             nombre: account.name || account.username,
             email: account.username,
-            rol: defaultRole,
+            rol: detectedRole,
+            proveedor: 'MICROSOFT',
+            esMicrosoft: true,
             tid: account.idTokenClaims?.tid,
           }
 
           let finalToken = result.idToken
 
-          // Notificar y registrar en backend Arcadia
+          // 2. Sincronizar y verificar rol contra el backend de Arcadia (ms-usuarios)
           try {
             const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8083'
             const response = await fetch(`${gatewayUrl}/api/usuarios/azure-login`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken: result.idToken })
+              body: JSON.stringify({ idToken: result.idToken }),
             })
             if (response.ok) {
               const data = await response.json()
@@ -66,25 +73,44 @@ export function MicrosoftProfile() {
               }
               if (data.userId) {
                 userObj.id = data.userId
-                userObj.rol = data.rol || userObj.rol
+              }
+              if (data.rol) {
+                userObj.rol = data.rol
+                detectedRole = data.rol
+              }
+              if (data.nombre) {
+                userObj.nombre = data.nombre
               }
             }
           } catch (e) {
-            console.warn('Backend no disponible para sync de Azure, usando token directo:', e)
+            console.warn('Backend no disponible para sync de Azure, usando datos directos de token:', e)
           }
 
+          setUserRole(detectedRole)
+          setSyncingBackend(false)
           localStorage.setItem('token', finalToken)
           localStorage.setItem('user', JSON.stringify(userObj))
 
-          // Si el usuario eligió un destino antes de iniciar sesión, verificar auto-redirección
+          // 3. Si el usuario había seleccionado un destino antes de iniciar sesión:
           const pendingTarget = sessionStorage.getItem('arcadia_msal_target')
           if (pendingTarget) {
             sessionStorage.removeItem('arcadia_msal_target')
-            handleNavigate(pendingTarget, finalToken, userObj)
+            if (pendingTarget === 'admin') {
+              if (detectedRole?.toLowerCase() === 'admin') {
+                handleNavigate('admin', finalToken, userObj)
+              } else {
+                setError(
+                  `Acceso restringido: Tu cuenta Microsoft (${account.username}) tiene rol '${detectedRole}'. Solo usuarios con rol 'Admin' pueden ingresar al Panel de Administración.`
+                )
+              }
+            } else {
+              handleNavigate('clientes', finalToken, userObj)
+            }
           }
         }
       } catch (err) {
         if (cancelled) return
+        setSyncingBackend(false)
 
         if (err instanceof InteractionRequiredAuthError) {
           setError('Se requiere interacción adicional. Por favor cierra sesión e inicia nuevamente.')
@@ -107,9 +133,9 @@ export function MicrosoftProfile() {
   }, [account, instance])
 
   const handleNavigate = (target, customToken = null, customUser = null) => {
-    setRedirecting(true)
+    setError(null)
     const activeToken = customToken || tokens?.idToken || localStorage.getItem('token') || 'msal-token'
-    
+
     let activeUser = customUser
     if (!activeUser) {
       try {
@@ -119,14 +145,25 @@ export function MicrosoftProfile() {
       }
     }
 
-    // Si entra al admin, asegurar que rol sea Admin
-    const roleForDestination = target === 'admin' ? 'Admin' : (activeUser.rol || 'Cliente')
+    const effectiveRole = activeUser.rol || userRole || 'Cliente'
+
+    // Verificación estricta por roles: solo Admin puede navegar al Panel de Administración
+    if (target === 'admin' && effectiveRole.toLowerCase() !== 'admin') {
+      setError(
+        `Acceso no autorizado: Tu cuenta Microsoft (${account?.username || 'usuario'}) tiene rol '${effectiveRole}'. Se requiere rol de Administrador para acceder al panel.`
+      )
+      return
+    }
+
+    setRedirecting(true)
     const finalUser = {
       ...activeUser,
       id: activeUser.id || account?.localAccountId || 'msal-user',
       nombre: activeUser.nombre || account?.name || account?.username,
       email: activeUser.email || account?.username,
-      rol: roleForDestination
+      rol: effectiveRole,
+      proveedor: 'MICROSOFT',
+      esMicrosoft: true,
     }
 
     localStorage.setItem('user', JSON.stringify(finalUser))
@@ -153,6 +190,7 @@ export function MicrosoftProfile() {
   if (!account) return null
 
   const tid = account.idTokenClaims?.tid
+  const isAdmin = userRole?.toLowerCase() === 'admin'
 
   return (
     <div className="msal-profile-card">
@@ -163,8 +201,28 @@ export function MicrosoftProfile() {
         <div className="msal-user-info">
           <h3>{account.name ?? 'Usuario Microsoft'}</h3>
           <p className="msal-email">{account.username}</p>
-          <span className="msal-badge">Microsoft Entra ID</span>
+          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+            <span className="msal-badge">Microsoft Entra ID</span>
+            {isAdmin ? (
+              <span className="msal-badge msal-badge-admin">👑 Rol: Admin</span>
+            ) : (
+              <span className="msal-badge msal-badge-cliente">👤 Rol: Cliente</span>
+            )}
+          </div>
         </div>
+      </div>
+
+      <div className="msal-role-card">
+        <span className="role-title">Verificación de Rol:</span>
+        <span className="role-val">
+          {syncingBackend ? (
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Sincronizando con Arcadia...</span>
+          ) : isAdmin ? (
+            <span style={{ color: '#c084fc' }}>👑 Administrador Autorizado</span>
+          ) : (
+            <span style={{ color: '#34d399' }}>👤 Cliente (Compras y Catálogo)</span>
+          )}
+        </span>
       </div>
 
       <div className="msal-tenant-info">
@@ -177,7 +235,7 @@ export function MicrosoftProfile() {
       {redirecting ? (
         <div style={{ textAlign: 'center', padding: '1rem 0' }}>
           <span className="loader"></span>
-          <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>Redirigiendo...</p>
+          <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>Redirigiendo de forma segura...</p>
         </div>
       ) : (
         <div className="msal-actions">
@@ -192,11 +250,18 @@ export function MicrosoftProfile() {
 
           <button
             type="button"
-            className="btn-primary msal-nav-btn admin-btn"
+            className={`btn-primary msal-nav-btn admin-btn ${!isAdmin ? 'btn-disabled' : ''}`}
             onClick={() => handleNavigate('admin')}
+            title={!isAdmin ? 'Requiere rol Administrador en Microsoft Entra ID o base de datos' : 'Ingresar al panel de control'}
           >
-            ⚙️ Ir al Panel de Administración
+            {isAdmin ? '⚙️ Ir al Panel de Administración' : '🔒 Panel de Administración (Solo Admin)'}
           </button>
+
+          {!isAdmin && (
+            <div className="msal-role-warning">
+              ℹ️ <strong>Nota de Seguridad:</strong> Tu cuenta Microsoft está registrada como <strong>Cliente</strong>. Si necesitas acceso de Administrador, un administrador de Arcadia puede elevar tus permisos en el panel o asignarte el rol en Azure Portal.
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
             <button
@@ -222,10 +287,10 @@ export function MicrosoftProfile() {
 
       {showTokens && tokens && (
         <div className="msal-tokens-inspector">
-          <h4>ID Token (Identidad · carnet):</h4>
+          <h4>ID Token (Microsoft Entra ID):</h4>
           <pre className="token-box">{tokens.idToken}</pre>
 
-          <h4>Access Token (Pase para API):</h4>
+          <h4>Access Token (Microsoft Graph):</h4>
           <pre className="token-box">{tokens.accessToken}</pre>
         </div>
       )}

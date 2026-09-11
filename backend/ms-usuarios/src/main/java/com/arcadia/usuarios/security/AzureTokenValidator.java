@@ -12,9 +12,12 @@ import com.nimbusds.jwt.proc.ConfigurableJWTProcessor;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -22,8 +25,16 @@ import java.util.List;
 @Slf4j
 public class AzureTokenValidator {
 
-    private static final String AZURE_JWKS_URL = "https://login.microsoftonline.com/common/discovery/v2.0/keys";
-    private final ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
+    @Value("${azure.tenant-id:common}")
+    private String tenantId;
+
+    @Value("${azure.admin-emails:}")
+    private String adminEmailsConfig;
+
+    @Value("${azure.admin-groups:}")
+    private String adminGroupsConfig;
+
+    private ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
 
     @Getter
     public static class AzureUserInfo {
@@ -41,13 +52,26 @@ public class AzureTokenValidator {
     }
 
     public AzureTokenValidator() {
+        // Inicialización por defecto en caso de no usar Spring injection directa
+        initProcessor("common");
+    }
+
+    @PostConstruct
+    public void init() {
+        String effectiveTenant = (tenantId != null && !tenantId.isBlank()) ? tenantId : "common";
+        initProcessor(effectiveTenant);
+    }
+
+    private void initProcessor(String tenant) {
         this.jwtProcessor = new DefaultJWTProcessor<>();
         try {
-            URL jwkSetURL = new URL(AZURE_JWKS_URL);
+            String jwksUrl = String.format("https://login.microsoftonline.com/%s/discovery/v2.0/keys", tenant);
+            URL jwkSetURL = new URL(jwksUrl);
             JWKSource<SecurityContext> keySource = new RemoteJWKSet<>(jwkSetURL);
             JWSKeySelector<SecurityContext> keySelector =
                     new JWSVerificationKeySelector<>(JWSAlgorithm.RS256, keySource);
             this.jwtProcessor.setJWSKeySelector(keySelector);
+            log.info("AzureTokenValidator configurado exitosamente con JWKS: {}", jwksUrl);
         } catch (Exception e) {
             log.error("Error al configurar el conjunto de claves JWKS de Azure Entra ID", e);
         }
@@ -112,14 +136,48 @@ public class AzureTokenValidator {
                 nombre = email;
             }
 
-            // Determinar rol
+            // Determinar rol con verificación multinivel
             String rol = "Cliente";
+            boolean esAdminPorClaim = false;
+            boolean esAdminPorEmail = false;
+            boolean esAdminPorGrupo = false;
+
+            // 1. Verificación por claim 'roles' de Microsoft Entra ID (App Roles)
             List<String> roles = claims.getStringListClaim("roles");
             if (roles != null) {
-                boolean isAdmin = roles.stream().anyMatch(r -> r.equalsIgnoreCase("Admin") || r.equalsIgnoreCase("Administrador"));
-                if (isAdmin) {
-                    rol = "Admin";
-                }
+                esAdminPorClaim = roles.stream().anyMatch(r ->
+                        r.equalsIgnoreCase("Admin") ||
+                        r.equalsIgnoreCase("Administrador") ||
+                        r.equalsIgnoreCase("GlobalAdmin")
+                );
+            }
+
+            // 2. Verificación por lista de correos administradores configurada (azure.admin-emails)
+            if (email != null && adminEmailsConfig != null && !adminEmailsConfig.isBlank()) {
+                final String userEmail = email.trim().toLowerCase();
+                esAdminPorEmail = Arrays.stream(adminEmailsConfig.split(","))
+                        .map(String::trim)
+                        .map(String::toLowerCase)
+                        .filter(s -> !s.isEmpty())
+                        .anyMatch(userEmail::equals);
+            }
+
+            // 3. Verificación por grupos de seguridad de Microsoft (groups claim)
+            List<String> groups = claims.getStringListClaim("groups");
+            if (groups != null && adminGroupsConfig != null && !adminGroupsConfig.isBlank()) {
+                List<String> targetGroups = Arrays.stream(adminGroupsConfig.split(","))
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .toList();
+                esAdminPorGrupo = groups.stream().anyMatch(targetGroups::contains);
+            }
+
+            if (esAdminPorClaim || esAdminPorEmail || esAdminPorGrupo) {
+                rol = "Admin";
+                log.info("Rol 'Admin' concedido para {}: [claim={}, email={}, grupo={}]",
+                        email, esAdminPorClaim, esAdminPorEmail, esAdminPorGrupo);
+            } else {
+                log.debug("Rol asignado por defecto 'Cliente' para {}", email);
             }
 
             String azureId = claims.getStringClaim("oid");

@@ -80,9 +80,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             usuarioRepository.save(nuevo);
         } else {
             usuarioRepository.findByEmail(info.getEmail()).ifPresent(existente -> {
+                boolean modificado = false;
                 if (!"MICROSOFT".equalsIgnoreCase(existente.getProveedor()) || !Boolean.TRUE.equals(existente.getEsMicrosoft())) {
                     existente.setProveedor("MICROSOFT");
                     existente.setEsMicrosoft(true);
+                    modificado = true;
+                }
+                if ("Admin".equalsIgnoreCase(info.getRol()) && !"Admin".equalsIgnoreCase(existente.getRol())) {
+                    existente.setRol("Admin");
+                    modificado = true;
+                }
+                if (modificado) {
                     usuarioRepository.save(existente);
                 }
             });

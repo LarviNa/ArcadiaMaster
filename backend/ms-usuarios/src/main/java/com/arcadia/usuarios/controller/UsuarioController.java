@@ -67,6 +67,20 @@ public class UsuarioController {
 
     // ── Protegidos (requieren token JWT) ──────────────────
 
+    @GetMapping("/me")
+    public ResponseEntity<?> obtenerUsuarioActual(org.springframework.security.core.Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "No autenticado"));
+        }
+        String email = authentication.getName();
+        return usuarioService.obtenerPorEmail(email)
+                .map(u -> {
+                    u.setPassword(null);
+                    return ResponseEntity.ok((Object) u);
+                })
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Usuario no encontrado")));
+    }
+
     @GetMapping
     public ResponseEntity<List<Usuario>> obtenerTodos() {
         List<Usuario> lista = usuarioService.obtenerTodos();
