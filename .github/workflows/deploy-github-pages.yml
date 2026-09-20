@@ -1,0 +1,55 @@
+name: Deploy Frontend to GitHub Pages
+
+on:
+  push:
+    branches: ["v2"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        working-directory: Frontend/Arcadia-FrontEnd-Login
+        run: npm ci
+
+      - name: Build
+        working-directory: Frontend/Arcadia-FrontEnd-Login
+        env:
+          VITE_CLIENT_ID: "55611909-8d64-41ee-90b6-2a89b026fd4e"
+          VITE_TENANT_ID: "b06eec4f-9d74-498c-8a73-b5f5eec5479f"
+          VITE_API_GATEWAY_URL: "https://yrs29frx6c.execute-api.us-east-1.amazonaws.com"
+          VITE_REDIRECT_URI: "https://larvina.github.io/ArcadiaMaster/"
+        run: npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './Frontend/Arcadia-FrontEnd-Login/dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
