@@ -77,12 +77,12 @@ export default function App({ isAuthConfigured = false, initError = null }) {
           })
         )
 
-        const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
-        const clientesUrl = import.meta.env.VITE_CLIENTES_URL || 'http://localhost:3001'
+        const adminUrl = import.meta.env.VITE_ADMIN_URL || './'
+        const clientesUrl = import.meta.env.VITE_CLIENTES_URL || './'
         if (redirectToAdmin) {
-          window.location.href = `${adminUrl}/?token=${data.token}&user=${userParam}`
+          window.location.href = `${adminUrl}`
         } else {
-          window.location.href = `${clientesUrl}/?token=${data.token}&user=${userParam}`
+          window.location.href = `${clientesUrl}`
         }
       }, 1000)
     } catch (err) {
@@ -105,12 +105,12 @@ export default function App({ isAuthConfigured = false, initError = null }) {
     )
 
     setTimeout(() => {
-      const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
-      const clientesUrl = import.meta.env.VITE_CLIENTES_URL || 'http://localhost:3001'
+      const adminUrl = import.meta.env.VITE_ADMIN_URL || './'
+      const clientesUrl = import.meta.env.VITE_CLIENTES_URL || './'
       if (redirectToAdmin) {
-        window.location.href = `${adminUrl}/?token=${mockToken}&user=${mockUser}`
+        window.location.href = `${adminUrl}`
       } else {
-        window.location.href = `${clientesUrl}/?token=${mockToken}&user=${mockUser}`
+        window.location.href = `${clientesUrl}`
       }
     }, 1200)
   }
@@ -213,8 +213,8 @@ export default function App({ isAuthConfigured = false, initError = null }) {
       </label>
       <span className="destination-hint">
         {redirectToAdmin
-          ? 'Destino: Panel de Control (:5174)'
-          : 'Destino: Tienda de Comics Clientes (:3001)'}
+          ? 'Destino: Panel de Administración'
+          : 'Destino: Tienda de Comics Clientes'}
       </span>
     </div>
   )
