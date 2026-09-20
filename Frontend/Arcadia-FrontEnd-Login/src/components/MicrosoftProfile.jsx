@@ -12,6 +12,8 @@ export function MicrosoftProfile() {
   const [redirecting, setRedirecting] = useState(false)
   const [userRole, setUserRole] = useState('Cliente')
   const [syncingBackend, setSyncingBackend] = useState(true)
+  const [apiTestResult, setApiTestResult] = useState(null)
+  const [testingApi, setTestingApi] = useState(false)
 
   const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
   const clientesUrl = import.meta.env.VITE_CLIENTES_URL || 'http://localhost:3001'
@@ -42,7 +44,7 @@ export function MicrosoftProfile() {
           // 1. Determinar rol inicial desde claims de Azure Entra ID (App Roles)
           const roles = account.idTokenClaims?.roles || []
           const hasAdminRole = roles.some(
-            (r) => typeof r === 'string' && (r.toLowerCase() === 'admin' || r.toLowerCase() === 'administrador')
+            (r) => typeof r === 'string' && (r.toLowerCase() === 'admin' || r.toLowerCase() === 'administrador' || r.toLowerCase() === 'profesor')
           )
           let detectedRole = hasAdminRole ? 'Admin' : 'Cliente'
 
@@ -60,7 +62,7 @@ export function MicrosoftProfile() {
 
           // 2. Sincronizar y verificar rol contra el backend de Arcadia (ms-usuarios)
           try {
-            const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8083'
+            const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'https://yrs29frx6c.execute-api.us-east-1.amazonaws.com'
             const response = await fetch(`${gatewayUrl}/api/usuarios/azure-login`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -131,6 +133,37 @@ export function MicrosoftProfile() {
       cancelled = true
     }
   }, [account, instance])
+
+  const handleTestApis = async () => {
+    setTestingApi(true)
+    setApiTestResult(null)
+    const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'https://yrs29frx6c.execute-api.us-east-1.amazonaws.com'
+    try {
+      // 1. Probar endpoint público /public/hola
+      const resPub = await fetch(`${gatewayUrl}/public/hola`)
+      const dataPub = await resPub.json().catch(() => ({ status: resPub.status }))
+
+      // 2. Probar endpoint privado /api/me con Access Token
+      const token = tokens?.accessToken || localStorage.getItem('token')
+      const resPriv = await fetch(`${gatewayUrl}/api/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const dataPriv = await resPriv.json().catch(() => ({ status: resPriv.status }))
+
+      setApiTestResult({
+        publicStatus: resPub.status,
+        publicData: dataPub,
+        privateStatus: resPriv.status,
+        privateData: dataPriv,
+      })
+    } catch (e) {
+      setApiTestResult({ error: e.message })
+    } finally {
+      setTestingApi(false)
+    }
+  }
 
   const handleNavigate = (target, customToken = null, customUser = null) => {
     setError(null)
@@ -263,6 +296,46 @@ export function MicrosoftProfile() {
             </div>
           )}
 
+          <div style={{ marginTop: '0.75rem' }}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={handleTestApis}
+              disabled={testingApi}
+              style={{ width: '100%', background: '#2563eb' }}
+            >
+              {testingApi ? 'Probando Backend...' : '🧪 Probar API pública (/public/hola) y privada (/api/me)'}
+            </button>
+          </div>
+
+          {apiTestResult && (
+            <div style={{ marginTop: '0.75rem', padding: '0.75rem', background: '#1e293b', borderRadius: '8px', fontSize: '0.85rem' }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: '#38bdf8' }}>Resultados de la prueba de API:</div>
+              {apiTestResult.error ? (
+                <div style={{ color: '#ef4444' }}>❌ Error al conectar con Backend: {apiTestResult.error}</div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '0.4rem' }}>
+                    <span style={{ color: apiTestResult.publicStatus === 200 ? '#4ade80' : '#f87171' }}>
+                      {apiTestResult.publicStatus === 200 ? '✅' : '❌'} GET /public/hola ({apiTestResult.publicStatus}):
+                    </span>
+                    <pre style={{ margin: '4px 0', padding: '4px', background: '#0f172a', borderRadius: '4px' }}>
+                      {JSON.stringify(apiTestResult.publicData, null, 2)}
+                    </pre>
+                  </div>
+                  <div>
+                    <span style={{ color: apiTestResult.privateStatus === 200 ? '#4ade80' : '#f87171' }}>
+                      {apiTestResult.privateStatus === 200 ? '✅' : '❌'} GET /api/me con Bearer Access Token ({apiTestResult.privateStatus}):
+                    </span>
+                    <pre style={{ margin: '4px 0', padding: '4px', background: '#0f172a', borderRadius: '4px' }}>
+                      {JSON.stringify(apiTestResult.privateData, null, 2)}
+                    </pre>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
             <button
               type="button"
@@ -287,10 +360,10 @@ export function MicrosoftProfile() {
 
       {showTokens && tokens && (
         <div className="msal-tokens-inspector">
-          <h4>ID Token (Microsoft Entra ID):</h4>
+          <h4>ID Token (Microsoft Entra ID · Identidad):</h4>
           <pre className="token-box">{tokens.idToken}</pre>
 
-          <h4>Access Token (Microsoft Graph):</h4>
+          <h4>Access Token de tu API (scope access_as_user · Pase Bearer):</h4>
           <pre className="token-box">{tokens.accessToken}</pre>
         </div>
       )}

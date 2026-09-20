@@ -39,6 +39,7 @@ public class SecurityConfig {
             "/api/usuarios/registro",
             "/api/usuarios/azure-login",
             "/api/usuarios/health",
+            "/public/**",
     };
 
     // ── Filter chain principal ────────────────────────────

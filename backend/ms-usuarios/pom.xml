@@ -48,6 +48,13 @@
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- H2 Database (Fallback para ejecución directa sin Docker ni MySQL en EC2) -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         
         <!-- Validation -->
         <dependency>

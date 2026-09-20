@@ -148,7 +148,8 @@ public class AzureTokenValidator {
                 esAdminPorClaim = roles.stream().anyMatch(r ->
                         r.equalsIgnoreCase("Admin") ||
                         r.equalsIgnoreCase("Administrador") ||
-                        r.equalsIgnoreCase("GlobalAdmin")
+                        r.equalsIgnoreCase("GlobalAdmin") ||
+                        r.equalsIgnoreCase("profesor")
                 );
             }
 
