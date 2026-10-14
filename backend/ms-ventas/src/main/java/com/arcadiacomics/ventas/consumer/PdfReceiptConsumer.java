@@ -51,6 +51,13 @@ public class PdfReceiptConsumer {
         log.info("   -> Cantidad de ítems: {}", venta.getItems() != null ? venta.getItems().size() : 0);
 
         try {
+            // Disparo para demostración de resiliencia y Dead Letter Queue (DLQ)
+            if (venta.getClienteEmail() != null && venta.getClienteEmail().toLowerCase().contains("dlq-pdf")) {
+                log.error("💥 [SIMULACIÓN ERROR DLQ PDF] Error forzado intencionalmente en PdfReceiptConsumer para orden '{}'", venta.getIdVenta());
+                log.error("💥 [SIMULACIÓN ERROR DLQ PDF] Rechazando mensaje (NACK). RabbitMQ lo enviará a 'comics.ventas.dlx' -> 'cola.ventas.dlq'.");
+                throw new RuntimeException("Simulación de error forzado en generación de boleta PDF para Dead Letter Queue (DLQ)");
+            }
+
             // 1. Generación del documento PDF en memoria
             byte[] pdfBytes = pdfReportService.generarBoletaVentaPdf(venta);
             log.info("📄 PDF generado exitosamente en memoria ({} bytes)", pdfBytes.length);
