@@ -264,7 +264,7 @@ export function MicrosoftProfile() {
         </div>
 
         {/* Pestañas de Navegación del Admin */}
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <button
             onClick={() => setAdminTab('overview')}
             style={{
@@ -293,6 +293,24 @@ export function MicrosoftProfile() {
           >
             👥 Gestión de Usuarios
           </button>
+          <a
+            href={`${adminUrl}${adminUrl.includes('?') ? '&' : '?'}token=${localStorage.getItem('token') || ''}&user=${encodeURIComponent(localStorage.getItem('user') || '')}`}
+            style={{
+              textDecoration: 'none',
+              padding: '0.6rem 1.2rem',
+              borderRadius: '8px',
+              fontWeight: 600,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+              color: '#fff',
+              boxShadow: '0 4px 14px rgba(124, 58, 237, 0.4)'
+            }}
+            title="Abrir Dashboard Administrativo Completo de Cómics"
+          >
+            📚 Gestión de Cómics & Ventas →
+          </a>
         </div>
 
         {/* Pestaña: Arquitectura & Estado */}
@@ -381,7 +399,7 @@ export function MicrosoftProfile() {
 
         {/* Pestaña: Usuarios Registrados */}
         {adminTab === 'users' && (
-          <div style={{ background: '#0f172a', padding: '1.25rem', borderRadius: '10px', border: '1px solid #1e293b' }}>
+          <div style={{ background: '#0f172a', padding: '1.25rem', borderRadius: '10px', border: '1px solid #1e293b', overflowX: 'auto', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Usuarios y Roles en el Sistema</h3>
               <button
@@ -394,7 +412,7 @@ export function MicrosoftProfile() {
               </button>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+            <table style={{ width: '100%', minWidth: '540px', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #334155', color: '#94a3b8' }}>
                   <th style={{ padding: '0.6rem 0.75rem' }}>Usuario</th>

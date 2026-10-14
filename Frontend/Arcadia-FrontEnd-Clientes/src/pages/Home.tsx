@@ -16,6 +16,12 @@ const Home = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [addedItemIds, setAddedItemIds] = useState<{ [key: string]: boolean }>({})
   const [stockFeedback, setStockFeedback] = useState<{ [key: string]: string }>({})
+  const [visibleCount, setVisibleCount] = useState<number>(8)
+
+  // Reset pagination when filter or sort changes
+  useEffect(() => {
+    setVisibleCount(8)
+  }, [searchTerm, selectedGenre, sortBy])
 
   useEffect(() => {
     const fetchComics = async () => {
@@ -429,8 +435,8 @@ const Home = () => {
       {/* Status Bar */}
       <div className="flex items-center justify-between mb-6 px-1">
         <p className="text-sm text-gray-500 dark:text-slate-400">
-          Mostrando <span className="font-semibold text-gray-800 dark:text-slate-200">{filteredAndSortedComics.length}</span> de{' '}
-          <span className="font-semibold text-gray-800 dark:text-slate-200">{comics.length}</span> cómics disponibles en el catálogo
+          Mostrando <span className="font-semibold text-gray-800 dark:text-slate-200">{Math.min(visibleCount, filteredAndSortedComics.length)}</span> de{' '}
+          <span className="font-semibold text-gray-800 dark:text-slate-200">{filteredAndSortedComics.length}</span> cómics disponibles en el catálogo
         </p>
       </div>
 
@@ -457,15 +463,31 @@ const Home = () => {
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredAndSortedComics.map((comic) => (
+          {filteredAndSortedComics.slice(0, visibleCount).map((comic) => (
             <ComicCard key={comic.id} comic={comic} />
           ))}
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredAndSortedComics.map((comic) => (
+          {filteredAndSortedComics.slice(0, visibleCount).map((comic) => (
             <ComicListItem key={comic.id} comic={comic} />
           ))}
+        </div>
+      )}
+
+      {/* Botón Ver más si hay más de 8 cómics */}
+      {!loading && visibleCount < filteredAndSortedComics.length && (
+        <div className="mt-12 mb-8 flex flex-col items-center justify-center">
+          <button
+            onClick={() => setVisibleCount(filteredAndSortedComics.length)}
+            className="group inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-primary-600 via-indigo-600 to-purple-600 hover:from-primary-700 hover:via-indigo-700 hover:to-purple-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-primary-500/30 transform hover:-translate-y-1 active:translate-y-0 transition-all text-sm cursor-pointer"
+          >
+            <span>Ver más cómics ({filteredAndSortedComics.length - visibleCount} restantes)</span>
+            <span className="text-lg transition-transform group-hover:translate-y-1">↓</span>
+          </button>
+          <p className="text-xs text-gray-400 dark:text-slate-500 mt-2">
+            Mostrando 8 de {filteredAndSortedComics.length} títulos del catálogo
+          </p>
         </div>
       )}
     </div>

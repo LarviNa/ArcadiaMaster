@@ -27,6 +27,9 @@ export default function App() {
   const [authorized, setAuthorized] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
+  const loginUrl = import.meta.env.VITE_LOGIN_URL || "https://arcadia-comics.duckdns.org/login/";
+  const clientesUrl = import.meta.env.VITE_CLIENTES_URL || "https://arcadia-comics.duckdns.org";
+
   useEffect(() => {
     // 1. Ingest URL query parameters (SSO from login portal)
     const params = new URLSearchParams(window.location.search);
@@ -46,7 +49,7 @@ export default function App() {
     const userStr = localStorage.getItem("user");
 
     if (!token || !userStr) {
-      window.location.href = "http://localhost:5173";
+      setAuthorized(false);
       return;
     }
 
@@ -54,30 +57,69 @@ export default function App() {
       const user = JSON.parse(userStr);
       if (user.rol?.toLowerCase() !== "admin") {
         console.warn("Acceso denegado: El usuario no posee rol Admin", user);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.href = "http://localhost:5173/?error=no_admin_role";
+        setAuthorized(false);
         return;
       }
       setCurrentUser(user);
       setAuthorized(true);
     } catch (e) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "http://localhost:5173";
+      setAuthorized(false);
     }
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = 'http://localhost:5173';
+    window.location.href = loginUrl;
+  };
+
+  const handleDemoAdminAccess = () => {
+    const demoAdmin = {
+      id: "u-admin-demo",
+      nombre: "Administrador Demo (Bypass)",
+      email: "admin@arcadia.cl",
+      rol: "Admin",
+      proveedor: "DEMO"
+    };
+    localStorage.setItem("token", "mock-admin-token-bypass");
+    localStorage.setItem("user", JSON.stringify(demoAdmin));
+    setCurrentUser(demoAdmin);
+    setAuthorized(true);
   };
 
   if (!authorized) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#0f172a', color: '#fff' }}>
-        <p>Verificando credenciales de Administrador...</p>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: 'radial-gradient(circle at top, #1e1b4b 0%, #0f172a 100%)', color: '#f8fafc', padding: '1.5rem', fontFamily: 'system-ui, sans-serif' }}>
+        <div style={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.1)', padding: '2.5rem', borderRadius: '16px', maxWidth: '440px', width: '100%', textAlign: 'center', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '0.8rem' }}>🛡️</div>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.4rem', color: '#fff' }}>Arcadia AdminPanel</h2>
+          <p style={{ color: '#94a3b8', fontSize: '0.875rem', marginBottom: '1.5rem', lineHeight: '1.4' }}>
+            Se requiere sesión de Administrador para gestionar el catálogo de cómics, inventario y usuarios.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button
+              type="button"
+              onClick={() => window.location.href = loginUrl}
+              style={{ padding: '0.75rem', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.9rem', transition: 'all 0.2s' }}
+            >
+              🔐 Iniciar Sesión (Portal Arcadia / Microsoft)
+            </button>
+            <button
+              type="button"
+              onClick={handleDemoAdminAccess}
+              style={{ padding: '0.75rem', background: '#334155', color: '#f8fafc', border: '1px solid #475569', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '0.9rem' }}
+              title="Ingresar directamente con credenciales de prueba para presentaciones"
+            >
+              ⚡ Acceso Rápido Administrador (Modo Demo)
+            </button>
+            <a
+              href={clientesUrl}
+              style={{ display: 'inline-block', color: '#818cf8', fontSize: '0.85rem', textDecoration: 'none', marginTop: '0.5rem' }}
+            >
+              ← Volver a la Tienda de Cómics
+            </a>
+          </div>
+        </div>
       </div>
     );
   }
@@ -125,6 +167,22 @@ export default function App() {
               )}
             </div>
           )}
+          <a
+            href={clientesUrl}
+            style={{
+              textDecoration: "none",
+              color: "#38bdf8",
+              fontSize: "0.85rem",
+              fontWeight: "600",
+              marginRight: "0.5rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.3rem"
+            }}
+            title="Ir a la Tienda de Cómics"
+          >
+            🛒 Tienda
+          </a>
           <button
             onClick={handleLogout}
             className="logout-button"

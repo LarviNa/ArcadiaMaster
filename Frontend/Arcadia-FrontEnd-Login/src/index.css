@@ -354,7 +354,9 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Card específica para sesión de MSAL */
 .glass-card.msal-card {
-  max-width: 520px;
+  max-width: 860px;
+  width: 95%;
+  padding: 2.5rem;
 }
 
 .msal-profile-card {

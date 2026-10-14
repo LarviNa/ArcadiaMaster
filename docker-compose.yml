@@ -107,6 +107,8 @@ services:
         - VITE_API_URL=https://arcadia-comics.duckdns.org/api/usuarios
         - VITE_COMICS_API_URL=https://arcadia-comics.duckdns.org/api/comics
         - VITE_VENTAS_API_URL=https://arcadia-comics.duckdns.org/orders
+        - VITE_LOGIN_URL=https://arcadia-comics.duckdns.org/login/
+        - VITE_CLIENTES_URL=https://arcadia-comics.duckdns.org
     container_name: frontend-admin
     restart: unless-stopped
     ports:
