@@ -73,6 +73,15 @@ public class ComicController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    @PostMapping("/{id}/reponer")
+    public ResponseEntity<Comic> restockComic(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "15") int stock) {
+        return comicService.setStock(id, stock)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
     @GetMapping("/health")
     public ResponseEntity<java.util.Map<String, String>> health() {
         return ResponseEntity.ok(java.util.Map.of(

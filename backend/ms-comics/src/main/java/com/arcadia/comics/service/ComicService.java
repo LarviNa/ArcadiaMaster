@@ -58,6 +58,13 @@ public class ComicService {
         });
     }
 
+    public Optional<Comic> setStock(String id, int newStock) {
+        return comicRepository.findById(id).map(comic -> {
+            comic.setStock(Math.max(0, newStock));
+            return comicRepository.save(comic);
+        });
+    }
+
     public boolean deleteComic(String id) {
         if (comicRepository.existsById(id)) {
             comicRepository.deleteById(id);
