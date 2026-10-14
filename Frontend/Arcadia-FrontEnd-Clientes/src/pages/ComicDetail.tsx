@@ -7,12 +7,13 @@ import { DEFAULT_COMICS, getFallbackImage } from '../data/comicsData'
 
 const ComicDetail = () => {
   const { id } = useParams<{ id: string }>()
-  const { addToCart } = useCart()
+  const { addToCart, items } = useCart()
   
   const [comic, setComic] = useState<Comic | null>(null)
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const [isAdded, setIsAdded] = useState(false)
+  const [warningMessage, setWarningMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -52,13 +53,23 @@ const ComicDetail = () => {
     }).format(price)
   }
 
+  const maxStock = comic && comic.stock !== undefined ? comic.stock : 10
+  const currentInCart = comic ? items.find((i) => i.id === comic.id)?.quantity || 0 : 0
+  const remainingStock = Math.max(0, maxStock - currentInCart)
+
   const handleAddMultiple = () => {
     if (!comic) return
-    for (let i = 0; i < quantity; i++) {
-      addToCart(comic)
+    if (remainingStock <= 0) {
+      setWarningMessage(`Ya tienes el máximo de unidades disponibles (${maxStock}) en tu carrito.`)
+      setTimeout(() => setWarningMessage(null), 3000)
+      return
     }
+
+    const qtyToAdd = Math.min(quantity, remainingStock)
+    addToCart(comic, qtyToAdd)
     setIsAdded(true)
     setTimeout(() => setIsAdded(false), 1500)
+    setQuantity(1)
   }
 
   if (loading) {
@@ -129,9 +140,15 @@ const ComicDetail = () => {
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-700">
                 {comic.genre}
               </span>
-              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 ml-auto">
-                Stock: {comic.stock ?? 10} unidades
-              </span>
+              {maxStock <= 0 ? (
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 text-red-700 border border-red-200 ml-auto">
+                  ❌ Agotado (0 unidades)
+                </span>
+              ) : (
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 ml-auto">
+                  Stock disponible: {maxStock} unid.
+                </span>
+              )}
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">{comic.title}</h1>
@@ -185,21 +202,29 @@ const ComicDetail = () => {
               </div>
             </div>
 
+            {warningMessage && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold rounded-xl">
+                ⚠️ {warningMessage}
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex items-center border border-gray-300 rounded-xl bg-gray-50 px-2">
                 <button
                   type="button"
+                  disabled={quantity <= 1 || remainingStock <= 0}
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="px-3 py-2 text-gray-600 hover:text-gray-900 font-bold"
+                  className="px-3 py-2 text-gray-600 hover:text-gray-900 font-bold disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   -
                 </button>
-                <span className="px-3 font-bold text-sm text-gray-800">{quantity}</span>
+                <span className="px-3 font-bold text-sm text-gray-800">{remainingStock <= 0 ? 0 : quantity}</span>
                 <button
                   type="button"
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="px-3 py-2 text-gray-600 hover:text-gray-900 font-bold"
+                  disabled={quantity >= remainingStock || remainingStock <= 0}
+                  onClick={() => setQuantity((q) => Math.min(remainingStock, q + 1))}
+                  className="px-3 py-2 text-gray-600 hover:text-gray-900 font-bold disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   +
                 </button>
@@ -208,13 +233,20 @@ const ComicDetail = () => {
               <button
                 type="button"
                 onClick={handleAddMultiple}
+                disabled={remainingStock <= 0 || maxStock <= 0}
                 className={`flex-1 py-3 px-6 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 ${
-                  isAdded
+                  remainingStock <= 0 || maxStock <= 0
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white shadow-primary-600/30'
                 }`}
               >
-                {isAdded ? (
+                {maxStock <= 0 ? (
+                  <span>❌ Sin Stock Disponible</span>
+                ) : remainingStock <= 0 ? (
+                  <span>⚠️ Límite de Stock Alcanzado en Carrito</span>
+                ) : isAdded ? (
                   <>
                     <Check className="h-5 w-5" />
                     <span>¡Agregado al Carrito!</span>

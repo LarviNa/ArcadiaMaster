@@ -6,7 +6,7 @@ import { Comic } from '../context/CartContext'
 import { DEFAULT_COMICS, getFallbackImage } from '../data/comicsData'
 
 const Home = () => {
-  const { addToCart } = useCart()
+  const { addToCart, items } = useCart()
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [selectedGenre, setSelectedGenre] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -15,6 +15,7 @@ const Home = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [isUsingFallback, setIsUsingFallback] = useState<boolean>(false)
   const [addedItemIds, setAddedItemIds] = useState<{ [key: string]: boolean }>({})
+  const [stockFeedback, setStockFeedback] = useState<{ [key: string]: string }>({})
 
   useEffect(() => {
     const fetchComics = async () => {
@@ -47,11 +48,27 @@ const Home = () => {
   }, [])
 
   const handleAddToCart = (comic: Comic) => {
-    addToCart(comic)
-    setAddedItemIds((prev) => ({ ...prev, [comic.id]: true }))
-    setTimeout(() => {
-      setAddedItemIds((prev) => ({ ...prev, [comic.id]: false }))
-    }, 1200)
+    const maxStock = comic.stock !== undefined ? comic.stock : 10
+    if (maxStock <= 0) {
+      setStockFeedback((prev) => ({ ...prev, [comic.id]: '¡Agotado!' }))
+      setTimeout(() => setStockFeedback((prev) => ({ ...prev, [comic.id]: '' })), 2500)
+      return
+    }
+
+    const currentInCart = items.find((i) => i.id === comic.id)?.quantity || 0
+    if (currentInCart >= maxStock) {
+      setStockFeedback((prev) => ({ ...prev, [comic.id]: `Máx. ${maxStock} en carrito` }))
+      setTimeout(() => setStockFeedback((prev) => ({ ...prev, [comic.id]: '' })), 2500)
+      return
+    }
+
+    const success = addToCart(comic)
+    if (success) {
+      setAddedItemIds((prev) => ({ ...prev, [comic.id]: true }))
+      setTimeout(() => {
+        setAddedItemIds((prev) => ({ ...prev, [comic.id]: false }))
+      }, 1200)
+    }
   }
 
   const formatPriceCLP = (price: number) => {
@@ -92,6 +109,9 @@ const Home = () => {
 
   const ComicCard = ({ comic }: { comic: Comic }) => {
     const isAdded = !!addedItemIds[comic.id]
+    const feedback = stockFeedback[comic.id]
+    const currentStock = comic.stock !== undefined ? comic.stock : 10
+    const isOutOfStock = currentStock <= 0
     const publisherColor =
       comic.publisher.includes('Marvel')
         ? 'bg-red-100 text-red-800'
@@ -100,7 +120,7 @@ const Home = () => {
         : 'bg-emerald-100 text-emerald-800'
 
     return (
-      <div className="card overflow-hidden group flex flex-col justify-between border border-gray-200 hover:border-primary-400 hover:shadow-xl transition-all duration-300">
+      <div className={`card overflow-hidden group flex flex-col justify-between border ${isOutOfStock ? 'border-red-200 bg-gray-50/50' : 'border-gray-200 hover:border-primary-400 hover:shadow-xl'} transition-all duration-300`}>
         <div className="relative overflow-hidden bg-gray-100 aspect-[3/4]">
           <img
             src={comic.coverImage}
@@ -109,8 +129,15 @@ const Home = () => {
             onError={(e) => {
               ;(e.currentTarget as HTMLImageElement).src = getFallbackImage(comic.title, comic.publisher)
             }}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isOutOfStock ? 'grayscale opacity-75' : ''}`}
           />
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="bg-red-600 text-white font-black text-xs uppercase px-3 py-1 rounded-full shadow-lg tracking-wider">
+                Agotado
+              </span>
+            </div>
+          )}
           <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-sm">
             <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
           </div>
@@ -125,9 +152,15 @@ const Home = () => {
           <div>
             <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
               <span>{comic.genre}</span>
-              <span className="font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                Stock: {comic.stock ?? 10}
-              </span>
+              {isOutOfStock ? (
+                <span className="font-bold text-red-600 bg-red-100/80 px-1.5 py-0.5 rounded text-[11px]">
+                  Sin Stock
+                </span>
+              ) : (
+                <span className="font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px]">
+                  Stock: {currentStock}
+                </span>
+              )}
             </div>
             <h3 className="font-bold text-gray-900 text-base mb-1 line-clamp-1 group-hover:text-primary-600 transition-colors">
               {comic.title}
@@ -136,6 +169,11 @@ const Home = () => {
           </div>
 
           <div>
+            {feedback && (
+              <div className="mb-2 p-1 bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-semibold text-center rounded animate-pulse">
+                {feedback}
+              </div>
+            )}
             <div className="flex items-baseline justify-between mb-3">
               <span className="text-xl font-extrabold text-primary-600">{formatPriceCLP(comic.price)}</span>
               <span className="text-xs text-gray-400 line-through">
@@ -152,12 +190,15 @@ const Home = () => {
               </Link>
               <button
                 onClick={() => handleAddToCart(comic)}
+                disabled={isOutOfStock}
                 className={`p-2 rounded-lg font-medium text-xs transition-colors flex items-center justify-center ${
-                  isAdded
+                  isOutOfStock
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                 }`}
-                title="Añadir al Carrito"
+                title={isOutOfStock ? 'Producto Agotado' : 'Añadir al Carrito'}
               >
                 {isAdded ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
               </button>
@@ -170,10 +211,13 @@ const Home = () => {
 
   const ComicListItem = ({ comic }: { comic: Comic }) => {
     const isAdded = !!addedItemIds[comic.id]
+    const feedback = stockFeedback[comic.id]
+    const currentStock = comic.stock !== undefined ? comic.stock : 10
+    const isOutOfStock = currentStock <= 0
 
     return (
-      <div className="card p-4 flex flex-col sm:flex-row gap-4 border border-gray-200 hover:border-primary-300 transition-all">
-        <div className="w-full sm:w-28 h-40 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+      <div className={`card p-4 flex flex-col sm:flex-row gap-4 border ${isOutOfStock ? 'border-red-200 bg-gray-50/40' : 'border-gray-200 hover:border-primary-300'} transition-all`}>
+        <div className="w-full sm:w-28 h-40 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
           <img
             src={comic.coverImage}
             alt={comic.title}
@@ -181,8 +225,15 @@ const Home = () => {
             onError={(e) => {
               ;(e.currentTarget as HTMLImageElement).src = getFallbackImage(comic.title, comic.publisher)
             }}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover ${isOutOfStock ? 'grayscale opacity-75' : ''}`}
           />
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <span className="bg-red-600 text-white font-bold text-[10px] uppercase px-2 py-0.5 rounded shadow">
+                Agotado
+              </span>
+            </div>
+          )}
         </div>
         <div className="flex-1 flex flex-col justify-between">
           <div>
@@ -191,9 +242,15 @@ const Home = () => {
                 {comic.publisher}
               </span>
               <span className="text-xs text-gray-500">• {comic.genre}</span>
-              <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded ml-auto">
-                Stock: {comic.stock ?? 10} unid.
-              </span>
+              {isOutOfStock ? (
+                <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded ml-auto border border-red-200">
+                  Sin Stock
+                </span>
+              ) : (
+                <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded ml-auto">
+                  Stock: {currentStock} unid.
+                </span>
+              )}
             </div>
             <h3 className="font-bold text-lg text-gray-900 mb-1">{comic.title}</h3>
             <p className="text-gray-600 text-sm mb-2">Por {comic.author}</p>
@@ -203,6 +260,9 @@ const Home = () => {
           <div className="flex items-center justify-between pt-2 border-t border-gray-100">
             <div>
               <span className="text-2xl font-bold text-primary-600">{formatPriceCLP(comic.price)}</span>
+              {feedback && (
+                <p className="text-xs text-amber-700 font-semibold mt-0.5">{feedback}</p>
+              )}
             </div>
             <div className="flex gap-2">
               <Link to={`/comic/${comic.id}`} className="btn-secondary text-xs py-2 px-3 font-semibold">
@@ -210,13 +270,18 @@ const Home = () => {
               </Link>
               <button
                 onClick={() => handleAddToCart(comic)}
+                disabled={isOutOfStock}
                 className={`py-2 px-4 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors ${
-                  isAdded
+                  isOutOfStock
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                 }`}
               >
-                {isAdded ? (
+                {isOutOfStock ? (
+                  <span>Agotado</span>
+                ) : isAdded ? (
                   <>
                     <Check className="h-4 w-4" />
                     <span>¡Agregado!</span>

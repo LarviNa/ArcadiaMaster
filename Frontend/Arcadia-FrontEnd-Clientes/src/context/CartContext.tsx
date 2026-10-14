@@ -5,6 +5,7 @@ export interface Comic {
   title: string
   author: string
   price: number
+  stock?: number
   coverImage: string
   description: string
   publisher: string
@@ -26,7 +27,7 @@ interface CartState {
 interface CartContextType {
   items: CartItem[]
   total: number
-  addToCart: (comic: Comic) => void
+  addToCart: (comic: Comic, quantityToAdd?: number) => boolean
   removeFromCart: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
@@ -35,7 +36,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 type CartAction =
-  | { type: 'ADD_TO_CART'; payload: Comic }
+  | { type: 'ADD_TO_CART'; payload: Comic; quantity?: number }
   | { type: 'REMOVE_FROM_CART'; payload: string }
   | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
   | { type: 'CLEAR_CART' }
@@ -43,12 +44,25 @@ type CartAction =
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
     case 'ADD_TO_CART': {
-      const existingItem = state.items.find(item => item.id === action.payload.id)
+      const comic = action.payload
+      const maxStock = comic.stock !== undefined ? comic.stock : 10
+      const addQty = action.quantity && action.quantity > 0 ? action.quantity : 1
+
+      if (maxStock <= 0) {
+        return state
+      }
+
+      const existingItem = state.items.find(item => item.id === comic.id)
       
       if (existingItem) {
+        if (existingItem.quantity >= maxStock) {
+          return state
+        }
+
+        const newQuantity = Math.min(existingItem.quantity + addQty, maxStock)
         const updatedItems = state.items.map(item =>
-          item.id === action.payload.id
-            ? { ...item, quantity: item.quantity + 1 }
+          item.id === comic.id
+            ? { ...item, ...comic, quantity: newQuantity }
             : item
         )
         return {
@@ -58,7 +72,8 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
         }
       }
       
-      const newItems = [...state.items, { ...action.payload, quantity: 1 }]
+      const initialQty = Math.min(addQty, maxStock)
+      const newItems = [...state.items, { ...comic, quantity: initialQty }]
       return {
         ...state,
         items: newItems,
@@ -85,9 +100,13 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
           total: updatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
         }
       }
+
+      const targetItem = state.items.find(item => item.id === id)
+      const maxStock = targetItem && targetItem.stock !== undefined ? targetItem.stock : 999
+      const validQuantity = Math.min(quantity, maxStock)
       
       const updatedItems = state.items.map(item =>
-        item.id === id ? { ...item, quantity } : item
+        item.id === id ? { ...item, quantity: validQuantity } : item
       )
       return {
         ...state,
@@ -110,8 +129,17 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, { items: [], total: 0 })
 
-  const addToCart = (comic: Comic) => {
-    dispatch({ type: 'ADD_TO_CART', payload: comic })
+  const addToCart = (comic: Comic, quantityToAdd: number = 1): boolean => {
+    const maxStock = comic.stock !== undefined ? comic.stock : 10
+    if (maxStock <= 0) {
+      return false
+    }
+    const existing = state.items.find(i => i.id === comic.id)
+    if (existing && existing.quantity >= maxStock) {
+      return false
+    }
+    dispatch({ type: 'ADD_TO_CART', payload: comic, quantity: quantityToAdd })
+    return true
   }
 
   const removeFromCart = (id: string) => {

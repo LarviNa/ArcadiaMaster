@@ -74,12 +74,53 @@ const Cart = () => {
       return
     }
 
+    // =========================================================================
+    // 🛡️ VERIFICACIÓN DIRECTA DE LA PÁGINA (CONTROL DE STOCK ANTES DE LA COLA)
+    // =========================================================================
+    // 1. Verificación local con los datos actuales del carrito
+    for (const item of items) {
+      const stockItem = item.stock !== undefined ? item.stock : 10
+      if (stockItem <= 0) {
+        setError(`❌ Verificación de Stock: El cómic "${item.title}" está AGOTADO (Stock: 0). Debes eliminarlo del carrito para poder comprar.`)
+        return
+      }
+      if (item.quantity > stockItem) {
+        setError(`❌ Verificación de Stock: Solicitas ${item.quantity} unidades de "${item.title}", pero solo disponemos de ${stockItem} en stock. Ajusta la cantidad antes de comprar.`)
+        return
+      }
+    }
+
     try {
       setLoading(true)
       setError(null)
 
       const token = localStorage.getItem('token') || ''
-      const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8082'
+      const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8083'
+
+      // 2. Verificación en tiempo real contra la base de datos (ms-comics)
+      for (const item of items) {
+        try {
+          const resComic = await fetch(`${gatewayUrl}/api/comics/${item.id}`, {
+            signal: AbortSignal.timeout(2500)
+          })
+          if (resComic.ok) {
+            const liveData = await resComic.json()
+            const realStock = liveData.stock !== undefined ? liveData.stock : 10
+            if (realStock <= 0) {
+              setError(`❌ Verificación en Vivo: "${item.title}" se encuentra actualmente AGOTADO (0 unidades en base de datos). La compra fue bloqueada en la página sin pasar a la cola RabbitMQ.`)
+              setLoading(false)
+              return
+            }
+            if (item.quantity > realStock) {
+              setError(`❌ Verificación en Vivo: Solicitas ${item.quantity} ejemplares de "${item.title}", pero el stock en MySQL es de solo ${realStock}. La orden NO fue enviada a la cola.`)
+              setLoading(false)
+              return
+            }
+          }
+        } catch (checkErr) {
+          console.warn('Verificación en vivo omitida para ítem ' + item.id, checkErr)
+        }
+      }
 
       const orderData = {
         userId: userId || 'u-invitado',
@@ -125,9 +166,8 @@ const Cart = () => {
 
       clearCart()
     } catch (err: any) {
-      console.warn('Checkout request falló en backend remoto, activando respuesta de demostración:', err)
-      // If backend is momentarily down during local UI presentation, we provide full feedback
-      setError(`No se pudo contactar con ms-ventas (${err.message}). Si estás probando la interfaz antes de levantar el backend, puedes iniciar ms-ventas en el puerto 8083.`)
+      console.warn('Checkout request falló:', err)
+      setError(`No se pudo procesar la compra: ${err.message}`)
     } finally {
       setLoading(false)
     }
@@ -268,69 +308,98 @@ const Cart = () => {
         {/* Left Column: Items List */}
         <div className="lg:col-span-7 space-y-4">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 divide-y divide-gray-100 overflow-hidden">
-            {items.map((item) => (
-              <div key={item.id} className="p-4 sm:p-5 flex gap-4 items-center">
-                <img
-                  src={item.coverImage}
-                  alt={item.title}
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    ;(e.currentTarget as HTMLImageElement).src = getFallbackImage(item.title, item.publisher)
-                  }}
-                  className="w-16 h-22 sm:w-20 sm:h-28 object-cover rounded-lg bg-gray-100 flex-shrink-0"
-                />
+            {items.map((item) => {
+              const maxStock = item.stock !== undefined ? item.stock : 10
+              const isOutOfStock = maxStock <= 0
+              const exceedsStock = item.quantity > maxStock
+              const isAtMax = item.quantity >= maxStock
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start gap-2">
-                    <div>
-                      <span className="text-[11px] font-bold text-primary-600 uppercase">
-                        {item.publisher}
-                      </span>
-                      <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{item.title}</h3>
-                      <p className="text-xs text-gray-500">Por {item.author}</p>
+              return (
+                <div key={item.id} className={`p-4 sm:p-5 flex gap-4 items-center ${isOutOfStock || exceedsStock ? 'bg-red-50/40' : ''}`}>
+                  <img
+                    src={item.coverImage}
+                    alt={item.title}
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      ;(e.currentTarget as HTMLImageElement).src = getFallbackImage(item.title, item.publisher)
+                    }}
+                    className={`w-16 h-22 sm:w-20 sm:h-28 object-cover rounded-lg bg-gray-100 flex-shrink-0 ${isOutOfStock ? 'grayscale opacity-75' : ''}`}
+                  />
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <span className="text-[11px] font-bold text-primary-600 uppercase">
+                          {item.publisher}
+                        </span>
+                        <h3 className="font-bold text-gray-900 text-sm sm:text-base truncate">{item.title}</h3>
+                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                          <p className="text-xs text-gray-500">Por {item.author}</p>
+                          {isOutOfStock ? (
+                            <span className="text-[10px] font-bold text-red-600 bg-red-100/80 px-2 py-0.5 rounded border border-red-200">
+                              ❌ Agotado (0 disp.)
+                            </span>
+                          ) : exceedsStock ? (
+                            <span className="text-[10px] font-bold text-red-600 bg-red-100/80 px-2 py-0.5 rounded border border-red-200">
+                              ⚠️ Supera stock ({maxStock} disp.)
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                              Stock: {maxStock} disp.
+                            </span>
+                          )}
+                          {isAtMax && !isOutOfStock && !exceedsStock && (
+                            <span className="text-[10px] text-amber-600 font-semibold">(Máximo alcanzado)</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-gray-400 hover:text-red-600 p-1 transition-colors"
+                        title="Eliminar ítem"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
 
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-gray-400 hover:text-red-600 p-1 transition-colors"
-                      title="Eliminar ítem"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                    <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-50">
+                      {/* Quantity Selector */}
+                      <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50">
+                        <button
+                          onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                          disabled={item.quantity <= 1}
+                          className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className={`w-8 text-center text-xs font-bold ${exceedsStock ? 'text-red-600' : 'text-gray-800'}`}>
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          disabled={isAtMax || isOutOfStock}
+                          className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
+                          title={isAtMax ? 'Stock máximo alcanzado' : 'Aumentar cantidad'}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
 
-                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-50">
-                    {/* Quantity Selector */}
-                    <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50">
-                      <button
-                        onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                        disabled={item.quantity <= 1}
-                        className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-40"
-                      >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="w-8 text-center text-xs font-bold text-gray-800">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-900"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </div>
-
-                    {/* Price */}
-                    <div className="text-right">
-                      <p className="font-extrabold text-gray-900 text-sm sm:text-base">
-                        {formatPriceCLP(item.price * item.quantity)}
-                      </p>
-                      <p className="text-[11px] text-gray-400">
-                        {formatPriceCLP(item.price)} c/u
-                      </p>
+                      {/* Price */}
+                      <div className="text-right">
+                        <p className="font-extrabold text-gray-900 text-sm sm:text-base">
+                          {formatPriceCLP(item.price * item.quantity)}
+                        </p>
+                        <p className="text-[11px] text-gray-400">
+                          {formatPriceCLP(item.price)} c/u
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <Link
@@ -465,16 +534,30 @@ const Cart = () => {
               </div>
             </div>
 
+            {items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock)) && (
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-semibold leading-relaxed">
+                ⚠️ Hay cómics en tu carrito que superan el stock disponible o están agotados. Modifica las cantidades o elimina el ítem para procesar la compra.
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
-              className="w-full btn-primary py-3.5 text-sm font-bold shadow-lg shadow-primary-600/30 flex items-center justify-center gap-2 rounded-xl"
+              disabled={loading || items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock))}
+              className={`w-full py-3.5 text-sm font-bold shadow-lg flex items-center justify-center gap-2 rounded-xl transition-all ${
+                items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock))
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                  : 'btn-primary shadow-primary-600/30'
+              }`}
             >
               {loading ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                  <span>Enviando evento a RabbitMQ...</span>
+                  <span>Verificando inventario y enviando a RabbitMQ...</span>
+                </>
+              ) : items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock)) ? (
+                <>
+                  <span>❌ Stock Insuficiente para Comprar</span>
                 </>
               ) : (
                 <>
