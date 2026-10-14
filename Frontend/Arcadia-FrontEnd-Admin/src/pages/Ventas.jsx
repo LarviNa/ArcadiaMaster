@@ -39,6 +39,7 @@ function formatFechaCorta(dateStr) {
 const STATUS_META = {
   PENDING:    { label: "Pendiente",   cls: "status-pending"   },
   PROCESSING: { label: "Procesando",  cls: "status-processing"},
+  PAID:       { label: "Pagada",      cls: "status-completed" },
   COMPLETED:  { label: "Completada",  cls: "status-completed" },
   CANCELLED:  { label: "Cancelada",   cls: "status-cancelled" },
 };
