@@ -148,6 +148,18 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
+    public List<OrderResponse> getOrdersByUserOrEmail(String userId, String email) {
+        return orderRepository.findAll().stream()
+                .filter(o -> (userId != null && !userId.isBlank() && userId.equalsIgnoreCase(o.getUserId())) ||
+                             (email != null && !email.isBlank() && email.equalsIgnoreCase(o.getCustomerEmail())))
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null || b.getCreatedAt() == null) return 0;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                })
+                .map(OrderResponse::new)
+                .collect(Collectors.toList());
+    }
+
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll().stream()
                 .map(OrderResponse::new)

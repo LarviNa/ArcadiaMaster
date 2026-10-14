@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, Search, User, Sun, Moon } from 'lucide-react'
+import { ShoppingCart, Search, User, Sun, Moon, Package } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { useTheme } from '../../context/ThemeContext'
 
@@ -136,6 +136,16 @@ const Header = () => {
                 <span className="hidden sm:inline">Ingresar</span>
               </button>
             )}
+
+            {/* Mis Compras Link */}
+            <Link
+              to="/mis-compras"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-gray-700 dark:text-slate-200 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 transition-colors"
+              title="Ver mis compras recientes"
+            >
+              <Package className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+              <span className="hidden sm:inline">Mis Compras</span>
+            </Link>
             
             {/* Dark Mode Toggle Button */}
             <button

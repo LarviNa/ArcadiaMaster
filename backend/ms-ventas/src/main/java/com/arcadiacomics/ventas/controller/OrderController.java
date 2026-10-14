@@ -50,6 +50,14 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/user-orders")
+    public ResponseEntity<List<OrderResponse>> getUserOrders(
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String email) {
+        List<OrderResponse> response = orderService.getOrdersByUserOrEmail(userId, email);
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());

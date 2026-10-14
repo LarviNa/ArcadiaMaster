@@ -27,7 +27,7 @@ spring:
         - id: ms-usuarios
           uri: ${MS_USUARIOS_URL:http://localhost:8085}
           predicates:
-            - Path=/api/usuarios/**
+            - Path=/api/usuarios, /api/usuarios/**
         - id: ms-comics
           uri: ${MS_COMICS_URL:http://localhost:8081}
           predicates:

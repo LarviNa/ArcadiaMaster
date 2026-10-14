@@ -5,6 +5,7 @@ import Footer from './components/layout/Footer'
 import Home from './pages/Home'
 import ComicDetail from './pages/ComicDetail'
 import Cart from './pages/Cart'
+import MisCompras from './pages/MisCompras'
 import { CartProvider } from './context/CartContext'
 import { ThemeProvider } from './context/ThemeContext'
 
@@ -35,6 +36,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/comic/:id" element={<ComicDetail />} />
               <Route path="/cart" element={<Cart />} />
+              <Route path="/mis-compras" element={<MisCompras />} />
+              <Route path="/orders" element={<MisCompras />} />
             </Routes>
           </main>
           <Footer />
