@@ -20,12 +20,12 @@ const Cart = () => {
   // Customer details
   const [customerName, setCustomerName] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
-  const [userId, setUserId] = useState('u002')
+  const [userId, setUserId] = useState('')
 
   // Payment mock
-  const [cardNumber, setCardNumber] = useState('4532 8901 2345 6789')
-  const [expirationDate, setExpirationDate] = useState('12/29')
-  const [ccv, setCcv] = useState('123')
+  const [cardNumber, setCardNumber] = useState('')
+  const [expirationDate, setExpirationDate] = useState('')
+  const [ccv, setCcv] = useState('')
 
   const navigate = useNavigate()
 
@@ -37,15 +37,9 @@ const Cart = () => {
         if (u.nombre) setCustomerName(u.nombre)
         if (u.email) setCustomerEmail(u.email)
         if (u.id) setUserId(u.id)
-      } else {
-        // Pre-fill friendly demo defaults for quick presentation testing
-        setCustomerName('Matias Barraza')
-        setCustomerEmail('mat.barrazac@duocuc.cl')
-        setUserId('u-demo-1')
       }
     } catch {
-      setCustomerName('Cliente Arcadia')
-      setCustomerEmail('cliente@arcadia.cl')
+      // Empty by default
     }
   }, [])
 
@@ -90,6 +84,9 @@ const Cart = () => {
     setCustomerName('Matias Barraza Contreras')
     setCustomerEmail('mat.barrazac@duocuc.cl')
     setUserId('u-demo-matias')
+    setCardNumber('4532 8901 2345 6789')
+    setExpirationDate('12/29')
+    setCcv('123')
   }
 
   const formatPriceCLP = (price: number) => {
@@ -531,7 +528,7 @@ const Cart = () => {
                   required
                   value={cardNumber}
                   onChange={(e) => setCardNumber(e.target.value)}
-                  placeholder="Número de Tarjeta"
+                  placeholder="4532 8901 2345 6789"
                   className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono transition-colors"
                 />
               </div>
@@ -541,7 +538,7 @@ const Cart = () => {
                   required
                   value={expirationDate}
                   onChange={(e) => setExpirationDate(e.target.value)}
-                  placeholder="MM/YY"
+                  placeholder="MM/AA"
                   className="px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-center transition-colors"
                 />
                 <input
@@ -549,8 +546,8 @@ const Cart = () => {
                   required
                   value={ccv}
                   onChange={(e) => setCcv(e.target.value)}
-                  placeholder="CCV (3 dígitos)"
-                  maxLength={3}
+                  placeholder="CVV (3 dígitos)"
+                  maxLength={4}
                   className="px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 font-mono text-center transition-colors"
                 />
               </div>
