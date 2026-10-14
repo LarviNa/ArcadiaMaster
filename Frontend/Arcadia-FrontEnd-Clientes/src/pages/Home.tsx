@@ -48,17 +48,20 @@ const Home = () => {
   }, [])
 
   const handleAddToCart = (comic: Comic) => {
-    const maxStock = comic.stock !== undefined ? comic.stock : 10
+    const rawStock = comic.stock !== undefined ? comic.stock : 10
+    const maxStock = typeof rawStock === 'number' ? rawStock : parseInt(String(rawStock), 10)
     if (maxStock <= 0) {
-      setStockFeedback((prev) => ({ ...prev, [comic.id]: '¡Agotado!' }))
-      setTimeout(() => setStockFeedback((prev) => ({ ...prev, [comic.id]: '' })), 2500)
+      alert(`⚠️ No es posible agregar al carrito: "${comic.title}" se encuentra AGOTADO (Stock: 0).`)
+      setStockFeedback((prev) => ({ ...prev, [comic.id]: '❌ ¡Agotado! (Stock: 0)' }))
+      setTimeout(() => setStockFeedback((prev) => ({ ...prev, [comic.id]: '' })), 3000)
       return
     }
 
     const currentInCart = items.find((i) => i.id === comic.id)?.quantity || 0
     if (currentInCart >= maxStock) {
+      alert(`⚠️ Ya tienes el máximo disponible (${maxStock} unid.) de "${comic.title}" en tu carrito.`)
       setStockFeedback((prev) => ({ ...prev, [comic.id]: `Máx. ${maxStock} en carrito` }))
-      setTimeout(() => setStockFeedback((prev) => ({ ...prev, [comic.id]: '' })), 2500)
+      setTimeout(() => setStockFeedback((prev) => ({ ...prev, [comic.id]: '' })), 3000)
       return
     }
 
@@ -110,7 +113,8 @@ const Home = () => {
   const ComicCard = ({ comic }: { comic: Comic }) => {
     const isAdded = !!addedItemIds[comic.id]
     const feedback = stockFeedback[comic.id]
-    const currentStock = comic.stock !== undefined ? comic.stock : 10
+    const rawStock = comic.stock !== undefined ? comic.stock : 10
+    const currentStock = typeof rawStock === 'number' ? rawStock : parseInt(String(rawStock), 10)
     const isOutOfStock = currentStock <= 0
     const publisherColor =
       comic.publisher.includes('Marvel')
@@ -120,7 +124,7 @@ const Home = () => {
         : 'bg-emerald-100 text-emerald-800'
 
     return (
-      <div className={`card overflow-hidden group flex flex-col justify-between border ${isOutOfStock ? 'border-red-200 bg-gray-50/50' : 'border-gray-200 hover:border-primary-400 hover:shadow-xl'} transition-all duration-300`}>
+      <div className={`card overflow-hidden group flex flex-col justify-between border ${isOutOfStock ? 'border-red-300 bg-red-50/20 shadow-sm' : 'border-gray-200 hover:border-primary-400 hover:shadow-xl'} transition-all duration-300`}>
         <div className="relative overflow-hidden bg-gray-100 aspect-[3/4]">
           <img
             src={comic.coverImage}
@@ -133,8 +137,8 @@ const Home = () => {
           />
           {isOutOfStock && (
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <span className="bg-red-600 text-white font-black text-xs uppercase px-3 py-1 rounded-full shadow-lg tracking-wider">
-                Agotado
+              <span className="bg-red-600 text-white font-black text-xs uppercase px-3 py-1 rounded-full shadow-lg tracking-wider border border-white/30">
+                Agotado (0)
               </span>
             </div>
           )}
@@ -153,11 +157,11 @@ const Home = () => {
             <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
               <span>{comic.genre}</span>
               {isOutOfStock ? (
-                <span className="font-bold text-red-600 bg-red-100/80 px-1.5 py-0.5 rounded text-[11px]">
-                  Sin Stock
+                <span className="font-bold text-red-700 bg-red-100 border border-red-300 px-2 py-0.5 rounded text-[11px] animate-pulse">
+                  Stock: 0 (Agotado)
                 </span>
               ) : (
-                <span className="font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded text-[11px]">
+                <span className="font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-[11px]">
                   Stock: {currentStock}
                 </span>
               )}
@@ -170,7 +174,7 @@ const Home = () => {
 
           <div>
             {feedback && (
-              <div className="mb-2 p-1 bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-semibold text-center rounded animate-pulse">
+              <div className="mb-2 p-1.5 bg-red-50 border border-red-200 text-red-700 text-[11px] font-bold text-center rounded">
                 {feedback}
               </div>
             )}
@@ -193,14 +197,20 @@ const Home = () => {
                 disabled={isOutOfStock}
                 className={`p-2 rounded-lg font-medium text-xs transition-colors flex items-center justify-center ${
                   isOutOfStock
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed opacity-90'
                     : isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                 }`}
-                title={isOutOfStock ? 'Producto Agotado' : 'Añadir al Carrito'}
+                title={isOutOfStock ? 'Producto Agotado (Stock: 0)' : 'Añadir al Carrito'}
               >
-                {isAdded ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
+                {isOutOfStock ? (
+                  <span className="text-[10px] font-bold px-1 text-red-600">Agotado</span>
+                ) : isAdded ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <ShoppingCart className="h-4 w-4" />
+                )}
               </button>
             </div>
           </div>
@@ -212,11 +222,12 @@ const Home = () => {
   const ComicListItem = ({ comic }: { comic: Comic }) => {
     const isAdded = !!addedItemIds[comic.id]
     const feedback = stockFeedback[comic.id]
-    const currentStock = comic.stock !== undefined ? comic.stock : 10
+    const rawStock = comic.stock !== undefined ? comic.stock : 10
+    const currentStock = typeof rawStock === 'number' ? rawStock : parseInt(String(rawStock), 10)
     const isOutOfStock = currentStock <= 0
 
     return (
-      <div className={`card p-4 flex flex-col sm:flex-row gap-4 border ${isOutOfStock ? 'border-red-200 bg-gray-50/40' : 'border-gray-200 hover:border-primary-300'} transition-all`}>
+      <div className={`card p-4 flex flex-col sm:flex-row gap-4 border ${isOutOfStock ? 'border-red-300 bg-red-50/20' : 'border-gray-200 hover:border-primary-300'} transition-all`}>
         <div className="w-full sm:w-28 h-40 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
           <img
             src={comic.coverImage}
@@ -243,11 +254,11 @@ const Home = () => {
               </span>
               <span className="text-xs text-gray-500">• {comic.genre}</span>
               {isOutOfStock ? (
-                <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded ml-auto border border-red-200">
-                  Sin Stock
+                <span className="text-xs font-bold text-red-700 bg-red-100 border border-red-300 px-2.5 py-0.5 rounded ml-auto flex items-center gap-1">
+                  🔴 Stock: 0 (Agotado)
                 </span>
               ) : (
-                <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded ml-auto">
+                <span className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded ml-auto">
                   Stock: {currentStock} unid.
                 </span>
               )}
@@ -261,7 +272,7 @@ const Home = () => {
             <div>
               <span className="text-2xl font-bold text-primary-600">{formatPriceCLP(comic.price)}</span>
               {feedback && (
-                <p className="text-xs text-amber-700 font-semibold mt-0.5">{feedback}</p>
+                <p className="text-xs text-red-700 font-bold mt-0.5">{feedback}</p>
               )}
             </div>
             <div className="flex gap-2">
@@ -273,14 +284,14 @@ const Home = () => {
                 disabled={isOutOfStock}
                 className={`py-2 px-4 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors ${
                   isOutOfStock
-                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed'
                     : isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                 }`}
               >
                 {isOutOfStock ? (
-                  <span>Agotado</span>
+                  <span className="font-bold">❌ Sin Stock</span>
                 ) : isAdded ? (
                   <>
                     <Check className="h-4 w-4" />

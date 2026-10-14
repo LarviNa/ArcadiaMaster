@@ -78,4 +78,14 @@ public class OrderController {
                 "port", "8082"
         ));
     }
+
+    @ExceptionHandler(org.springframework.web.server.ResponseStatusException.class)
+    public ResponseEntity<java.util.Map<String, Object>> handleResponseStatus(org.springframework.web.server.ResponseStatusException ex) {
+        String msg = ex.getReason() != null ? ex.getReason() : "Error en validación de compra";
+        return ResponseEntity.status(ex.getStatusCode()).body(java.util.Map.of(
+                "status", ex.getStatusCode().value(),
+                "error", msg,
+                "message", msg
+        ));
+    }
 }

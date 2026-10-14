@@ -8,6 +8,7 @@ const Cart = () => {
   const { items, total, updateQuantity, removeFromCart, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [liveStockMap, setLiveStockMap] = useState<{ [id: string]: number }>({})
   const [successData, setSuccessData] = useState<{
     orderId: string
     customerName: string
@@ -48,6 +49,43 @@ const Cart = () => {
     }
   }, [])
 
+  // Sincronización en vivo con la base de datos MySQL (ms-comics vía Gateway)
+  useEffect(() => {
+    const fetchLiveStocks = async () => {
+      try {
+        const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8083'
+        const res = await fetch(`${gatewayUrl}/api/comics`, { signal: AbortSignal.timeout(3000) })
+        if (res.ok) {
+          const list = await res.json()
+          if (Array.isArray(list)) {
+            const map: { [id: string]: number } = {}
+            list.forEach((c: any) => {
+              map[c.id] = typeof c.stock === 'number' ? c.stock : 0
+            })
+            setLiveStockMap(map)
+          }
+        }
+      } catch (e) {
+        console.warn('No se pudo sincronizar stock en vivo en el carrito:', e)
+      }
+    }
+    fetchLiveStocks()
+  }, [items.length])
+
+  const getItemStock = (item: any): number => {
+    if (liveStockMap[item.id] !== undefined) {
+      return liveStockMap[item.id]
+    }
+    const raw = item.stock !== undefined ? item.stock : 10
+    return typeof raw === 'number' ? raw : parseInt(String(raw), 10)
+  }
+
+  const itemsWithIssues = items.filter((item) => {
+    const stock = getItemStock(item)
+    return stock <= 0 || item.quantity > stock
+  })
+  const hasStockError = itemsWithIssues.length > 0
+
   const handleFillDemoData = () => {
     setCustomerName('Matias Barraza Contreras')
     setCustomerEmail('mat.barrazac@duocuc.cl')
@@ -77,15 +115,14 @@ const Cart = () => {
     // =========================================================================
     // 🛡️ VERIFICACIÓN DIRECTA DE LA PÁGINA (CONTROL DE STOCK ANTES DE LA COLA)
     // =========================================================================
-    // 1. Verificación local con los datos actuales del carrito
     for (const item of items) {
-      const stockItem = item.stock !== undefined ? item.stock : 10
+      const stockItem = getItemStock(item)
       if (stockItem <= 0) {
-        setError(`❌ Verificación de Stock: El cómic "${item.title}" está AGOTADO (Stock: 0). Debes eliminarlo del carrito para poder comprar.`)
+        setError(`❌ Compra Bloqueada en la Página: El cómic "${item.title}" está actualmente AGOTADO (Stock: 0). Debes eliminarlo del carrito para poder continuar. La orden NO fue enviada a la cola RabbitMQ.`)
         return
       }
       if (item.quantity > stockItem) {
-        setError(`❌ Verificación de Stock: Solicitas ${item.quantity} unidades de "${item.title}", pero solo disponemos de ${stockItem} en stock. Ajusta la cantidad antes de comprar.`)
+        setError(`❌ Compra Bloqueada en la Página: Solicitas ${item.quantity} unidades de "${item.title}", pero solo disponemos de ${stockItem} en stock. Ajusta la cantidad antes de comprar. La orden NO fue enviada a la cola.`)
         return
       }
     }
@@ -309,13 +346,13 @@ const Cart = () => {
         <div className="lg:col-span-7 space-y-4">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 divide-y divide-gray-100 overflow-hidden">
             {items.map((item) => {
-              const maxStock = item.stock !== undefined ? item.stock : 10
+              const maxStock = getItemStock(item)
               const isOutOfStock = maxStock <= 0
               const exceedsStock = item.quantity > maxStock
               const isAtMax = item.quantity >= maxStock
 
               return (
-                <div key={item.id} className={`p-4 sm:p-5 flex gap-4 items-center ${isOutOfStock || exceedsStock ? 'bg-red-50/40' : ''}`}>
+                <div key={item.id} className={`p-4 sm:p-5 flex gap-4 items-center transition-colors ${isOutOfStock ? 'bg-red-50/70 border-l-4 border-l-red-500' : exceedsStock ? 'bg-amber-50/50 border-l-4 border-l-amber-500' : ''}`}>
                   <img
                     src={item.coverImage}
                     alt={item.title}
@@ -336,15 +373,15 @@ const Cart = () => {
                         <div className="flex flex-wrap items-center gap-2 mt-0.5">
                           <p className="text-xs text-gray-500">Por {item.author}</p>
                           {isOutOfStock ? (
-                            <span className="text-[10px] font-bold text-red-600 bg-red-100/80 px-2 py-0.5 rounded border border-red-200">
-                              ❌ Agotado (0 disp.)
+                            <span className="text-[11px] font-bold text-red-700 bg-red-100 border border-red-300 px-2 py-0.5 rounded animate-pulse">
+                              🔴 Stock: 0 (Agotado)
                             </span>
                           ) : exceedsStock ? (
-                            <span className="text-[10px] font-bold text-red-600 bg-red-100/80 px-2 py-0.5 rounded border border-red-200">
+                            <span className="text-[11px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded">
                               ⚠️ Supera stock ({maxStock} disp.)
                             </span>
                           ) : (
-                            <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                            <span className="text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
                               Stock: {maxStock} disp.
                             </span>
                           )}
@@ -352,6 +389,11 @@ const Cart = () => {
                             <span className="text-[10px] text-amber-600 font-semibold">(Máximo alcanzado)</span>
                           )}
                         </div>
+                        {isOutOfStock && (
+                          <p className="text-xs font-bold text-red-600 mt-1">
+                            ⚠️ Este cómic se quedó sin stock. Debes eliminarlo del carrito para poder continuar.
+                          </p>
+                        )}
                       </div>
 
                       <button
@@ -368,19 +410,19 @@ const Cart = () => {
                       <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50">
                         <button
                           onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
-                          disabled={item.quantity <= 1}
+                          disabled={item.quantity <= 1 || isOutOfStock}
                           className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
                         >
                           <Minus className="h-3 w-3" />
                         </button>
-                        <span className={`w-8 text-center text-xs font-bold ${exceedsStock ? 'text-red-600' : 'text-gray-800'}`}>
+                        <span className={`w-8 text-center text-xs font-bold ${isOutOfStock || exceedsStock ? 'text-red-600' : 'text-gray-800'}`}>
                           {item.quantity}
                         </span>
                         <button
                           onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           disabled={isAtMax || isOutOfStock}
                           className="p-1 sm:p-1.5 text-gray-500 hover:text-gray-900 disabled:opacity-30 disabled:cursor-not-allowed"
-                          title={isAtMax ? 'Stock máximo alcanzado' : 'Aumentar cantidad'}
+                          title={isOutOfStock ? 'Producto Agotado' : isAtMax ? 'Stock máximo alcanzado' : 'Aumentar cantidad'}
                         >
                           <Plus className="h-3 w-3" />
                         </button>
@@ -534,19 +576,19 @@ const Cart = () => {
               </div>
             </div>
 
-            {items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock)) && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs font-semibold leading-relaxed">
-                ⚠️ Hay cómics en tu carrito que superan el stock disponible o están agotados. Modifica las cantidades o elimina el ítem para procesar la compra.
+            {hasStockError && (
+              <div className="p-3 bg-red-100 border border-red-300 text-red-800 rounded-xl text-xs font-bold leading-relaxed">
+                ❌ No es posible continuar: Tienes cómics agotados (Stock: 0) o que superan el inventario disponible. Elimina o ajusta los productos en rojo para pagar.
               </div>
             )}
 
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock))}
+              disabled={loading || hasStockError}
               className={`w-full py-3.5 text-sm font-bold shadow-lg flex items-center justify-center gap-2 rounded-xl transition-all ${
-                items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock))
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                hasStockError
+                  ? 'bg-red-100 text-red-600 border border-red-300 cursor-not-allowed shadow-none'
                   : 'btn-primary shadow-primary-600/30'
               }`}
             >
@@ -555,9 +597,9 @@ const Cart = () => {
                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
                   <span>Verificando inventario y enviando a RabbitMQ...</span>
                 </>
-              ) : items.some((item) => (item.stock !== undefined && item.stock <= 0) || (item.stock !== undefined && item.quantity > item.stock)) ? (
+              ) : hasStockError ? (
                 <>
-                  <span>❌ Stock Insuficiente para Comprar</span>
+                  <span>❌ Compra Bloqueada (Stock 0 / Insuficiente)</span>
                 </>
               ) : (
                 <>
