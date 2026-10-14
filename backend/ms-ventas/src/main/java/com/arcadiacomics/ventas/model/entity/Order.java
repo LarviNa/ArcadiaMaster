@@ -20,6 +20,12 @@ public class Order {
     @Column(nullable = false)
     private String userId;
 
+    @Column(name = "customer_name")
+    private String customerName;
+
+    @Column(name = "customer_email")
+    private String customerEmail;
+
     @Column(nullable = false)
     private Double totalAmount;
 
@@ -55,6 +61,22 @@ public class Order {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
     }
 
     public Double getTotalAmount() {

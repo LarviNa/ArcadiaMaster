@@ -95,22 +95,24 @@ export default function App({ isAuthConfigured = false, initError = null }) {
   const handleBypass = () => {
     setSuccess(true)
     const mockToken = redirectToAdmin ? 'mock-admin-token-bypass' : 'mock-cliente-token-bypass'
-    const mockUser = encodeURIComponent(
-      JSON.stringify({
-        id: 'u-mock-bypass',
-        nombre: redirectToAdmin ? 'Administrador Demo (Bypass)' : 'Cliente Demo (Bypass)',
-        email: redirectToAdmin ? 'admin-bypass@arcadia.com' : 'cliente-bypass@arcadia.com',
-        rol: redirectToAdmin ? 'Admin' : 'Cliente',
-      })
-    )
+    const userPayload = {
+      id: 'u-mock-bypass',
+      nombre: redirectToAdmin ? 'Administrador Demo (Bypass)' : 'Cliente Demo (Bypass)',
+      email: redirectToAdmin ? 'admin-bypass@arcadia.com' : 'cliente-bypass@arcadia.com',
+      rol: redirectToAdmin ? 'Admin' : 'Cliente',
+    }
+    const mockUser = encodeURIComponent(JSON.stringify(userPayload))
+
+    localStorage.setItem('token', mockToken)
+    localStorage.setItem('user', JSON.stringify(userPayload))
 
     setTimeout(() => {
       const adminUrl = import.meta.env.VITE_ADMIN_URL || './'
       const clientesUrl = import.meta.env.VITE_CLIENTES_URL || './'
       if (redirectToAdmin) {
-        window.location.href = `${adminUrl}`
+        window.location.href = `${adminUrl}/?token=${mockToken}&user=${mockUser}`
       } else {
-        window.location.href = `${clientesUrl}`
+        window.location.href = `${clientesUrl}/?token=${mockToken}&user=${mockUser}`
       }
     }, 1200)
   }

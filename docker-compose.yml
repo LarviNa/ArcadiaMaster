@@ -60,10 +60,17 @@ services:
     build: ./backend/ms-ventas
     container_name: ms-ventas
     environment:
-      - DB_HOST=mysql
+      - DB_URL=jdbc:mysql://mysql:3306/arcadia_ventas?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
       - DB_USER=root
       - DB_PASSWORD=
+      - DB_DRIVER=com.mysql.cj.jdbc.Driver
+      - DB_DIALECT=org.hibernate.dialect.MySQLDialect
+      - RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - MAIL_HOST=sandbox.smtp.mailtrap.io
+      - MAIL_PORT=2525
+      - MAIL_USER=fb3add333c003d
+      - MAIL_PASS=e26bdfe96036dd
     ports:
       - "8082:8082"
     depends_on:
@@ -90,9 +97,9 @@ services:
     build:
       context: ./Frontend/Arcadia-FrontEnd-Admin
       args:
-        - VITE_API_URL=http://100.49.168.55:8083/api/usuarios
-        - VITE_COMICS_API_URL=http://100.49.168.55:8083/api/comics
-        - VITE_VENTAS_API_URL=http://100.49.168.55:8083/orders
+        - VITE_API_URL=http://100.48.238.112:8083/api/usuarios
+        - VITE_COMICS_API_URL=http://100.48.238.112:8083/api/comics
+        - VITE_VENTAS_API_URL=http://100.48.238.112:8083/orders
     container_name: frontend-admin
     ports:
       - "5174:80"
@@ -101,8 +108,8 @@ services:
     build:
       context: ./Frontend/Arcadia-FrontEnd-Clientes
       args:
-        - VITE_API_GATEWAY_URL=http://100.49.168.55:8083
-        - VITE_LOGIN_URL=http://100.49.168.55:5173
+        - VITE_API_GATEWAY_URL=http://100.48.238.112:8083
+        - VITE_LOGIN_URL=http://100.48.238.112:5173
     container_name: frontend-clientes
     ports:
       - "3001:80"
@@ -111,10 +118,10 @@ services:
     build:
       context: ./Frontend/Arcadia-FrontEnd-Login
       args:
-        - VITE_API_GATEWAY_URL=http://100.49.168.55:8083
-        - VITE_LOGIN_URL=http://100.49.168.55:5173
-        - VITE_ADMIN_URL=http://100.49.168.55:5174
-        - VITE_CLIENTES_URL=http://100.49.168.55:3001
+        - VITE_API_GATEWAY_URL=http://100.48.238.112:8083
+        - VITE_LOGIN_URL=http://100.48.238.112:5173
+        - VITE_ADMIN_URL=http://100.48.238.112:5174
+        - VITE_CLIENTES_URL=http://100.48.238.112:3001
     container_name: frontend-login
     ports:
       - "5173:80"

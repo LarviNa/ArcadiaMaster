@@ -1,0 +1,177 @@
+import { Comic } from '../context/CartContext'
+
+export const DEFAULT_COMICS: Comic[] = [
+  {
+    id: 'c001',
+    title: 'The Amazing Spider-Man #1',
+    author: 'Stan Lee',
+    publisher: 'Marvel Comics',
+    price: 12990,
+    stock: 15,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/3/39/TheAmazingSpider-Man_1.jpg',
+    description: 'La legendaria primera edición en solitario del héroe arácnido. Peter Parker descubre que con un gran poder viene una gran responsabilidad.',
+    releaseDate: '1963-03-01',
+    genre: 'Superhero',
+    pages: 36,
+    language: 'Español'
+  },
+  {
+    id: 'c002',
+    title: 'Batman: The Dark Knight Returns',
+    author: 'Frank Miller',
+    publisher: 'DC Comics',
+    price: 14990,
+    stock: 10,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/5/5a/Dark_knight_returns.jpg',
+    description: 'Una Gotham distópica donde un Bruce Wayne envejecido retoma el manto de Batman para salvar su ciudad de una ola de criminalidad sin precedentes.',
+    releaseDate: '1986-02-01',
+    genre: 'Superhero',
+    pages: 224,
+    language: 'Español'
+  },
+  {
+    id: 'c003',
+    title: 'X-Men: Days of Future Past',
+    author: 'Chris Claremont',
+    publisher: 'Marvel Comics',
+    price: 11990,
+    stock: 20,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/3/39/XMen141.jpg',
+    description: 'Un futuro sombrío donde los mutantes son cazados por Centinelas. Kitty Pryde viaja en el tiempo para evitar el asesinato que detonó el apocalipsis.',
+    releaseDate: '1981-01-01',
+    genre: 'Sci-Fi',
+    pages: 144,
+    language: 'Español'
+  },
+  {
+    id: 'c004',
+    title: 'Watchmen',
+    author: 'Alan Moore',
+    publisher: 'DC Comics',
+    price: 18990,
+    stock: 8,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/a/a2/Watchmen%2C_issue_1.jpg',
+    description: 'La aclamada obra maestra que deconstruye el mito de los superhéroes en plena Guerra Fría. ¿Quién vigila a los vigilantes?',
+    releaseDate: '1986-09-01',
+    genre: 'Historical',
+    pages: 416,
+    language: 'Español'
+  },
+  {
+    id: 'c005',
+    title: 'Naruto Vol. 1',
+    author: 'Masashi Kishimoto',
+    publisher: 'Shueisha',
+    price: 8990,
+    stock: 25,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/9/94/NarutoCoverTankobon1.jpg',
+    description: 'El comienzo del viaje del joven ninja marginado Naruto Uzumaki en su camino para convertirse en el próximo Hokage de la Aldea de la Hoja.',
+    releaseDate: '2000-03-03',
+    genre: 'Fantasy',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c006',
+    title: 'Attack on Titan Vol. 1',
+    author: 'Hajime Isayama',
+    publisher: 'Kodansha',
+    price: 9990,
+    stock: 18,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/d/d6/AttackonTitan1.jpg',
+    description: 'La humanidad sobrevive encerrada tras tres muros gigantescos para protegerse de titanes devoradores de humanos. Eren Jaeger jura venganza.',
+    releaseDate: '2010-03-17',
+    genre: 'Horror',
+    pages: 196,
+    language: 'Español'
+  },
+  {
+    id: 'c007',
+    title: 'One Piece Vol. 1',
+    author: 'Eiichiro Oda',
+    publisher: 'Shueisha',
+    price: 8990,
+    stock: 30,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/6/6d/One_Piece%2C_Volume_61_Cover_%28Japanese%29.jpg',
+    description: 'Monkey D. Luffy se lanza a los mares en busca del mítico tesoro "One Piece" para convertirse en el Rey de los Piratas.',
+    releaseDate: '1997-12-24',
+    genre: 'Fantasy',
+    pages: 208,
+    language: 'Español'
+  },
+  {
+    id: 'c008',
+    title: 'Avengers: Infinity War',
+    author: 'Jim Starlin',
+    publisher: 'Marvel Comics',
+    price: 13990,
+    stock: 12,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/e/e2/Avengers_Infinity_Gauntlet.jpg',
+    description: 'Thanos reúne las seis Gemas del Infinito en su guantelete para redefinir la realidad con un simple chasquido de dedos.',
+    releaseDate: '1991-07-01',
+    genre: 'Superhero',
+    pages: 260,
+    language: 'Español'
+  },
+  {
+    id: 'c009',
+    title: 'Batman: Year One',
+    author: 'Frank Miller',
+    publisher: 'DC Comics',
+    price: 11990,
+    stock: 14,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/4/44/Batman_Year_One.jpg',
+    description: 'El origen definitivo del Caballero Oscuro y los primeros pasos del teniente James Gordon en el corrupto departamento de policía de Gotham.',
+    releaseDate: '1987-02-01',
+    genre: 'Superhero',
+    pages: 144,
+    language: 'Español'
+  },
+  {
+    id: 'c010',
+    title: 'Dragon Ball Vol. 1',
+    author: 'Akira Toriyama',
+    publisher: 'Shueisha',
+    price: 8990,
+    stock: 22,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/7/7e/DragonBallVolume1.jpg',
+    description: 'Goku conoce a Bulma y juntos emprenden una aventura cómica y fantástica en busca de las legendarias Esferas del Dragón.',
+    releaseDate: '1985-09-10',
+    genre: 'Fantasy',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c011',
+    title: 'Iron Man: Extremis',
+    author: 'Warren Ellis',
+    publisher: 'Marvel Comics',
+    price: 12990,
+    stock: 9,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/8/81/Iron_man_extremis.jpg',
+    description: 'Tony Stark debe actualizar su propia biología y armadura tras el surgimiento del suero biotecnológico Extremis.',
+    releaseDate: '2005-01-01',
+    genre: 'Sci-Fi',
+    pages: 160,
+    language: 'Español'
+  },
+  {
+    id: 'c012',
+    title: 'Demon Slayer Vol. 1',
+    author: 'Koyoharu Gotouge',
+    publisher: 'Shueisha',
+    price: 9990,
+    stock: 20,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/4/45/Kimetsu_no_Yaiba_Volume_1.jpg',
+    description: 'Tanjiro Kamado emprende un camino peligroso como cazador de demonios para encontrar una cura para su hermana Nezuko.',
+    releaseDate: '2016-06-03',
+    genre: 'Horror',
+    pages: 192,
+    language: 'Español'
+  }
+]
+
+export const getFallbackImage = (title: string, publisher: string) => {
+  const bg = publisher.includes('Marvel') ? '#b91c1c' : publisher.includes('DC') ? '#1d4ed8' : '#374151'
+  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420"><rect width="300" height="420" fill="${encodeURIComponent(bg)}"/><text x="150" y="80" fill="%23facc15" font-size="20" font-family="sans-serif" font-weight="bold" text-anchor="middle">${encodeURIComponent(publisher.toUpperCase())}</text><text x="150" y="210" fill="%23ffffff" font-size="22" font-family="sans-serif" font-weight="bold" text-anchor="middle">${encodeURIComponent(title.slice(0, 24))}</text><text x="150" y="240" fill="%23e2e8f0" font-size="16" font-family="sans-serif" text-anchor="middle">${encodeURIComponent(title.slice(24, 48))}</text><rect x="50" y="320" width="200" height="40" rx="8" fill="%23ffffff" fill-opacity="0.2"/><text x="150" y="346" fill="%23ffffff" font-size="14" font-family="sans-serif" font-weight="bold" text-anchor="middle">ARCADIA COMICS</text></svg>`
+}

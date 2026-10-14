@@ -12,7 +12,24 @@ public class OrderItemDTO {
     @Positive(message = "La cantidad debe ser mayor a cero")
     private Integer quantity;
 
+    private String title;
+    private Double price;
+    private String coverImage;
+
     public OrderItemDTO() {
+    }
+
+    public OrderItemDTO(String comicId, Integer quantity) {
+        this.comicId = comicId;
+        this.quantity = quantity;
+    }
+
+    public OrderItemDTO(String comicId, Integer quantity, String title, Double price, String coverImage) {
+        this.comicId = comicId;
+        this.quantity = quantity;
+        this.title = title;
+        this.price = price;
+        this.coverImage = coverImage;
     }
 
     public String getComicId() {
@@ -29,5 +46,29 @@ public class OrderItemDTO {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public String getCoverImage() {
+        return coverImage;
+    }
+
+    public void setCoverImage(String coverImage) {
+        this.coverImage = coverImage;
     }
 }

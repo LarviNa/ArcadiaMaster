@@ -49,6 +49,26 @@
             <optional>true</optional>
         </dependency>
         
+        <!-- OpenPDF for in-memory PDF generation -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.39</version>
+        </dependency>
+
+        <!-- Spring Boot Starter Mail for email notifications -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
+        <!-- H2 Database for fallback / local in-memory execution -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

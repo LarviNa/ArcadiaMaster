@@ -17,6 +17,9 @@ public class CheckoutRequest {
     @Positive(message = "El monto total debe ser mayor a cero")
     private Double totalAmount;
 
+    private String customerName;
+    private String customerEmail;
+
     @NotEmpty(message = "La lista de items no puede estar vacía")
     @Valid
     private List<OrderItemDTO> items;
@@ -51,6 +54,38 @@ public class CheckoutRequest {
 
     public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
+    }
+
+    public String getCustomerName() {
+        return customerName != null ? customerName : "Cliente Arcadia";
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getClienteNombre() {
+        return getCustomerName();
+    }
+
+    public void setClienteNombre(String clienteNombre) {
+        this.customerName = clienteNombre;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail != null ? customerEmail : "cliente@arcadiacomics.cl";
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
+    }
+
+    public String getClienteEmail() {
+        return getCustomerEmail();
+    }
+
+    public void setClienteEmail(String clienteEmail) {
+        this.customerEmail = clienteEmail;
     }
 
     public List<OrderItemDTO> getItems() {

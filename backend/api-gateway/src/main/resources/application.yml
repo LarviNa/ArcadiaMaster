@@ -35,4 +35,4 @@ spring:
         - id: ms-ventas
           uri: ${MS_VENTAS_URL:http://localhost:8082}
           predicates:
-            - Path=/orders/**
+            - Path=/orders/**, /api/rabbitmq/**

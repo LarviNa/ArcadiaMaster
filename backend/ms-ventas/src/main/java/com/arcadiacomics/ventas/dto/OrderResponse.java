@@ -10,6 +10,8 @@ public class OrderResponse {
 
     private String id;
     private String userId;
+    private String customerName;
+    private String customerEmail;
     private Double totalAmount;
     private OrderStatus status;
     private List<OrderItemDTO> items;
@@ -21,6 +23,8 @@ public class OrderResponse {
     public OrderResponse(Order order) {
         this.id = order.getId();
         this.userId = order.getUserId();
+        this.customerName = order.getCustomerName();
+        this.customerEmail = order.getCustomerEmail();
         this.totalAmount = order.getTotalAmount();
         this.status = order.getStatus();
         if (order.getItems() != null) {
@@ -28,6 +32,9 @@ public class OrderResponse {
                 OrderItemDTO dto = new OrderItemDTO();
                 dto.setComicId(item.getComicId());
                 dto.setQuantity(item.getQuantity());
+                dto.setTitle(item.getTitle());
+                dto.setPrice(item.getPrice());
+                dto.setCoverImage(item.getCoverImage());
                 return dto;
             }).collect(Collectors.toList());
         }
@@ -48,6 +55,22 @@ public class OrderResponse {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerEmail() {
+        return customerEmail;
+    }
+
+    public void setCustomerEmail(String customerEmail) {
+        this.customerEmail = customerEmail;
     }
 
     public Double getTotalAmount() {

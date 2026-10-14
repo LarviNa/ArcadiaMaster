@@ -23,6 +23,8 @@ export function MicrosoftProfile() {
   const redirectUri =
     import.meta.env.VITE_REDIRECT_URI ||
     (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173')
+  const clientesUrl = import.meta.env.VITE_CLIENTES_URL || 'http://localhost:3000'
+  const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
 
   useEffect(() => {
     if (!account) return
@@ -539,9 +541,13 @@ export function MicrosoftProfile() {
         <button
           type="button"
           className="btn-primary msal-nav-btn"
-          onClick={() => handleNavigate('tienda')}
+          onClick={() => {
+            const token = tokens?.accessToken || localStorage.getItem('token') || ''
+            const userStr = encodeURIComponent(localStorage.getItem('user') || '{}')
+            window.location.href = `${clientesUrl}/?token=${token}&user=${userStr}`
+          }}
         >
-          🛒 Ir a la Tienda de Comics
+          🛒 Ir a la Tienda de Comics (Puerto 3000)
         </button>
 
         <button

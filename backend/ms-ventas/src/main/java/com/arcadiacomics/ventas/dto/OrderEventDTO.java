@@ -1,44 +1,43 @@
 package com.arcadiacomics.ventas.dto;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.List;
 
-public class OrderEventDTO {
+/**
+ * DTO legado de eventos de orden.
+ * Extiende de VentaEventoDTO para máxima retrocompatibilidad.
+ */
+public class OrderEventDTO extends VentaEventoDTO {
 
-    private String orderId;
-    private String userId;
-    private List<OrderItemDTO> items;
+    private List<OrderItemDTO> legacyItems;
 
     public OrderEventDTO() {
+        super();
     }
 
     public OrderEventDTO(String orderId, String userId, List<OrderItemDTO> items) {
-        this.orderId = orderId;
-        this.userId = userId;
-        this.items = items;
+        super(orderId, userId, null, null, null, 0.0);
+        this.legacyItems = items;
+        if (items != null) {
+            List<VentaItemDTO> converted = new ArrayList<>();
+            for (OrderItemDTO it : items) {
+                converted.add(new VentaItemDTO(
+                        it.getComicId(),
+                        it.getTitle(),
+                        it.getPrice(),
+                        it.getQuantity(),
+                        it.getCoverImage()
+                ));
+            }
+            this.setItems(converted);
+        }
     }
 
-    public String getOrderId() {
-        return orderId;
+    public List<OrderItemDTO> getLegacyItems() {
+        return legacyItems;
     }
 
-    public void setOrderId(String orderId) {
-        this.orderId = orderId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public List<OrderItemDTO> getItems() {
-        return items;
-    }
-
-    public void setItems(List<OrderItemDTO> items) {
-        this.items = items;
+    public void setLegacyItems(List<OrderItemDTO> legacyItems) {
+        this.legacyItems = legacyItems;
     }
 }
