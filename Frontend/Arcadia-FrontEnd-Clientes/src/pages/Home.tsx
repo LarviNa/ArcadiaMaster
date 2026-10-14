@@ -4,6 +4,7 @@ import { Star, ShoppingCart, Grid, List, Check, Search, ShieldCheck, Zap } from 
 import { useCart } from '../context/CartContext'
 import { Comic } from '../context/CartContext'
 import { DEFAULT_COMICS, getFallbackImage } from '../data/comicsData'
+import DealsCarousel from '../components/home/DealsCarousel'
 
 const Home = () => {
   const { addToCart, items } = useCart()
@@ -13,7 +14,6 @@ const Home = () => {
   const [sortBy, setSortBy] = useState<string>('title')
   const [comics, setComics] = useState<Comic[]>(DEFAULT_COMICS)
   const [loading, setLoading] = useState<boolean>(true)
-  const [isUsingFallback, setIsUsingFallback] = useState<boolean>(false)
   const [addedItemIds, setAddedItemIds] = useState<{ [key: string]: boolean }>({})
   const [stockFeedback, setStockFeedback] = useState<{ [key: string]: string }>({})
 
@@ -23,7 +23,7 @@ const Home = () => {
         setLoading(true)
         const gatewayUrl = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:8083'
         const response = await fetch(`${gatewayUrl}/api/comics`, {
-          signal: AbortSignal.timeout(3000)
+          signal: AbortSignal.timeout(8000)
         })
         if (!response.ok) {
           throw new Error(`Error ${response.status}: No se pudo cargar catálogo remoto`)
@@ -31,15 +31,12 @@ const Home = () => {
         const data = await response.json()
         if (Array.isArray(data) && data.length > 0) {
           setComics(data)
-          setIsUsingFallback(false)
         } else {
           setComics(DEFAULT_COMICS)
-          setIsUsingFallback(true)
         }
       } catch (err) {
-        console.info('Usando catálogo inicial precargado (Modo Resiliente):', err)
+        console.info('Catálogo cargado con fallback local:', err)
         setComics(DEFAULT_COMICS)
-        setIsUsingFallback(true)
       } finally {
         setLoading(false)
       }
@@ -82,7 +79,19 @@ const Home = () => {
     }).format(price)
   }
 
-  const genres = ['all', 'Superhero', 'Sci-Fi', 'Horror', 'Historical', 'Fantasy']
+  const genres = [
+    'all',
+    'Superhero',
+    'Sci-Fi',
+    'Horror',
+    'Historical',
+    'Fantasy',
+    'Dark Fantasy',
+    'Supernatural',
+    'Action',
+    'Adventure',
+    'Mystery'
+  ]
 
   const filteredAndSortedComics = comics
     .filter((comic) => {
@@ -347,6 +356,9 @@ const Home = () => {
         <div className="absolute right-32 -bottom-20 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
       </div>
 
+      {/* Monthly Deals Carousel */}
+      <DealsCarousel />
+
       {/* Catalog Control Bar */}
       <div id="catalogo" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 mb-6 transition-colors">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -418,15 +430,8 @@ const Home = () => {
       <div className="flex items-center justify-between mb-6 px-1">
         <p className="text-sm text-gray-500 dark:text-slate-400">
           Mostrando <span className="font-semibold text-gray-800 dark:text-slate-200">{filteredAndSortedComics.length}</span> de{' '}
-          <span className="font-semibold text-gray-800 dark:text-slate-200">{comics.length}</span> cómics disponibles
+          <span className="font-semibold text-gray-800 dark:text-slate-200">{comics.length}</span> cómics disponibles en el catálogo
         </p>
-
-        {isUsingFallback && (
-          <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800 px-2.5 py-1 rounded-full font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-            Catálogo Local Activo (12 títulos)
-          </span>
-        )}
       </div>
 
       {/* Grid / List Content */}

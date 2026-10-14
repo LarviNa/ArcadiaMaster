@@ -168,10 +168,299 @@ export const DEFAULT_COMICS: Comic[] = [
     genre: 'Horror',
     pages: 192,
     language: 'Español'
+  },
+  {
+    id: 'c013',
+    title: 'Berserk Vol. 1',
+    author: 'Kentaro Miura',
+    publisher: 'Hakusensha',
+    price: 10990,
+    stock: 12,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/4/45/Berserk_vol01.jpg',
+    description: 'Guts, el legendario Espadachín Negro, empuña su gigantesca espada buscando venganza contra los Apóstoles y la Mano de Dios.',
+    releaseDate: '1990-11-26',
+    genre: 'Dark Fantasy',
+    pages: 224,
+    language: 'Español'
+  },
+  {
+    id: 'c014',
+    title: 'Jujutsu Kaisen Vol. 1',
+    author: 'Gege Akutami',
+    publisher: 'Shueisha',
+    price: 8490,
+    stock: 16,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/7/77/Jujutsu_kaisen_vol_1.png',
+    description: 'Yuji Itadori traga un dedo maldito de Ryomen Sukuna, ingresando al oculto y peligroso mundo de la hechicería jujutsu.',
+    releaseDate: '2018-12-04',
+    genre: 'Supernatural',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c015',
+    title: 'Death Note Vol. 1',
+    author: 'Tsugumi Ohba',
+    publisher: 'Shueisha',
+    price: 9490,
+    stock: 15,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/6/6f/Death_Note_Vol_1.jpg',
+    description: 'Light Yagami encuentra una libreta sobrenatural con el poder de quitarle la vida a quien tenga su nombre escrito en ella.',
+    releaseDate: '2004-04-02',
+    genre: 'Mystery',
+    pages: 200,
+    language: 'Español'
+  },
+  {
+    id: 'c016',
+    title: 'Chainsaw Man Vol. 1',
+    author: 'Tatsuki Fujimoto',
+    publisher: 'Shueisha',
+    price: 8990,
+    stock: 24,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/e/eb/Chainsaw_Man_volume_1_cover.jpg',
+    description: 'Denji, un joven endeudado que vive como cazador de demonios junto a Pochita, renace como el imparable Hombre Motosierra.',
+    releaseDate: '2019-03-04',
+    genre: 'Action',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c017',
+    title: 'Tokyo Ghoul Vol. 1',
+    author: 'Sui Ishida',
+    publisher: 'Shueisha',
+    price: 9290,
+    stock: 14,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/e/e5/Tokyo_Ghoul_volume_1_cover.jpg',
+    description: 'Ken Kaneki sobrevive a un ataque mortal solo para convertirse en un híbrido mitad humano mitad ghoul en las calles de Tokio.',
+    releaseDate: '2012-02-17',
+    genre: 'Horror',
+    pages: 224,
+    language: 'Español'
+  },
+  {
+    id: 'c018',
+    title: 'Fullmetal Alchemist Vol. 1',
+    author: 'Hiromu Arakawa',
+    publisher: 'Square Enix',
+    price: 9990,
+    stock: 18,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/9/9d/Fullmetal1.jpg',
+    description: 'Los hermanos Edward y Alphonse Elric desafían el tabú de la transmutación humana para intentar recuperar sus cuerpos.',
+    releaseDate: '2002-01-22',
+    genre: 'Fantasy',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c019',
+    title: 'Bleach Vol. 1',
+    author: 'Tite Kubo',
+    publisher: 'Shueisha',
+    price: 8490,
+    stock: 20,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/7/72/Bleach_cover_01.jpg',
+    description: 'Ichigo Kurosaki obtiene los poderes de un Segador de Almas tras conocer a Rukia Kuchiki y defender a su familia de los Hollows.',
+    releaseDate: '2002-01-05',
+    genre: 'Supernatural',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c020',
+    title: 'My Hero Academia Vol. 1',
+    author: 'Kohei Horikoshi',
+    publisher: 'Shueisha',
+    price: 8990,
+    stock: 22,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/5/5a/Boku_no_Hero_Academia_Volume_1.png',
+    description: 'En un mundo donde el 80% de la población posee dones, Izuku Midoriya nace sin poderes pero sueña con ser el héroe número uno.',
+    releaseDate: '2014-11-04',
+    genre: 'Superhero',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c021',
+    title: 'Hunter x Hunter Vol. 1',
+    author: 'Yoshihiro Togashi',
+    publisher: 'Shueisha',
+    price: 9490,
+    stock: 16,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/0/00/Hunter_%C3%97_Hunter_vol._1.png',
+    description: 'Gon Freecss decide tomar el durísimo Examen de Cazador para seguir los pasos de su padre y recorrer mundos desconocidos.',
+    releaseDate: '1998-06-04',
+    genre: 'Adventure',
+    pages: 192,
+    language: 'Español'
+  },
+  {
+    id: 'c022',
+    title: 'Deadpool Kills the Marvel Universe',
+    author: 'Cullen Bunn',
+    publisher: 'Marvel Comics',
+    price: 11490,
+    stock: 11,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/b/b3/Deadpool_Kills_the_Marvel_Universe_1.jpg',
+    description: 'El Mercenario Bocazas pierde el control de su psique y decide acabar despiadadamente con todos los héroes del universo Marvel.',
+    releaseDate: '2012-10-10',
+    genre: 'Superhero',
+    pages: 96,
+    language: 'Español'
+  },
+  {
+    id: 'c023',
+    title: 'Daredevil: Born Again',
+    author: 'Frank Miller',
+    publisher: 'Marvel Comics',
+    price: 13990,
+    stock: 10,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/6/60/Daredevil227.jpg',
+    description: 'Kingpin descubre la verdadera identidad de Daredevil y destruye sistemáticamente la vida de Matt Murdock en su obra cumbre.',
+    releaseDate: '1986-02-01',
+    genre: 'Superhero',
+    pages: 176,
+    language: 'Español'
+  },
+  {
+    id: 'c024',
+    title: 'Wolverine: Old Man Logan',
+    author: 'Mark Millar',
+    publisher: 'Marvel Comics',
+    price: 14490,
+    stock: 13,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/6/69/Wolverine_Old_Man_Logan.jpg',
+    description: 'Cincuenta años después de la caída de los héroes, un Logan pacífico y envejecido emprende un último viaje a través de una América destruida.',
+    releaseDate: '2008-06-01',
+    genre: 'Sci-Fi',
+    pages: 224,
+    language: 'Español'
+  },
+  {
+    id: 'c025',
+    title: 'Civil War',
+    author: 'Mark Millar',
+    publisher: 'Marvel Comics',
+    price: 15990,
+    stock: 15,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/f/fb/Civil_War_1.jpg',
+    description: 'La ley de registro sobrehumano fractura la comunidad de héroes, obligando a Iron Man y al Capitán América a enfrentarse a muerte.',
+    releaseDate: '2006-07-01',
+    genre: 'Superhero',
+    pages: 208,
+    language: 'Español'
+  },
+  {
+    id: 'c026',
+    title: 'All-Star Superman',
+    author: 'Grant Morrison',
+    publisher: 'DC Comics',
+    price: 14990,
+    stock: 12,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/4/4b/All_Star_Superman_1.jpg',
+    description: 'Herido mortalmente por una sobrecarga solar, Superman pasa sus últimos días completando doce tareas heroicas por el destino de la Tierra.',
+    releaseDate: '2006-01-01',
+    genre: 'Superhero',
+    pages: 304,
+    language: 'Español'
+  },
+  {
+    id: 'c027',
+    title: 'Flashpoint',
+    author: 'Geoff Johns',
+    publisher: 'DC Comics',
+    price: 13490,
+    stock: 14,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/1/14/Flashpoint_1.jpg',
+    description: 'Barry Allen despierta en una línea temporal distorsionada donde la Liga de la Justicia no existe y Atlantis está en guerra con Themyscira.',
+    releaseDate: '2011-05-01',
+    genre: 'Sci-Fi',
+    pages: 176,
+    language: 'Español'
+  },
+  {
+    id: 'c028',
+    title: 'The Sandman: Preludes & Nocturnes',
+    author: 'Neil Gaiman',
+    publisher: 'DC Vertigo',
+    price: 17990,
+    stock: 9,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/3/30/Sandman_1.jpg',
+    description: 'Tras setenta años de cautiverio, Sueño de los Eternos escapa y emprende una odisea por recuperar sus tres símbolos de poder.',
+    releaseDate: '1989-01-01',
+    genre: 'Dark Fantasy',
+    pages: 240,
+    language: 'Español'
+  },
+  {
+    id: 'c029',
+    title: 'V for Vendetta',
+    author: 'Alan Moore',
+    publisher: 'DC Vertigo',
+    price: 16490,
+    stock: 10,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/b/b0/Vforvendettax.jpg',
+    description: 'En una Gran Bretaña gobernada por un régimen fascista totalitario, un justiciero enmascarado conocido como V inicia una revolución.',
+    releaseDate: '1988-09-01',
+    genre: 'Historical',
+    pages: 296,
+    language: 'Español'
+  },
+  {
+    id: 'c030',
+    title: 'Kingdom Come',
+    author: 'Mark Waid',
+    publisher: 'DC Comics',
+    price: 15490,
+    stock: 8,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/0/05/Kingdom_come_1.jpg',
+    description: 'En un futuro apocalíptico donde una nueva generación de vigilantes causa estragos, la vieja guardia de héroes regresa para imponer orden.',
+    releaseDate: '1996-05-01',
+    genre: 'Superhero',
+    pages: 232,
+    language: 'Español'
+  },
+  {
+    id: 'c031',
+    title: 'Venom: Lethal Protector',
+    author: 'David Michelinie',
+    publisher: 'Marvel Comics',
+    price: 12490,
+    stock: 17,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/4/47/Venom_Lethal_Protector_1.jpg',
+    description: 'Eddie Brock se traslada a San Francisco buscando empezar de nuevo como protector letal, pero un ejército de simbiontes acecha en las sombras.',
+    releaseDate: '1993-02-01',
+    genre: 'Superhero',
+    pages: 144,
+    language: 'Español'
+  },
+  {
+    id: 'c032',
+    title: 'Akira Vol. 1',
+    author: 'Katsuhiro Otomo',
+    publisher: 'Kodansha',
+    price: 19990,
+    stock: 7,
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/a/a2/Akira_vol01.jpg',
+    description: 'En el Neo-Tokio post-apocalíptico del año 2019, pandillas de motociclistas se topan con un peligroso proyecto militar de telequinesis.',
+    releaseDate: '1984-09-21',
+    genre: 'Sci-Fi',
+    pages: 364,
+    language: 'Español'
   }
 ]
 
 export const getFallbackImage = (title: string, publisher: string) => {
-  const bg = publisher.includes('Marvel') ? '#b91c1c' : publisher.includes('DC') ? '#1d4ed8' : '#374151'
-  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420"><rect width="300" height="420" fill="${encodeURIComponent(bg)}"/><text x="150" y="80" fill="%23facc15" font-size="20" font-family="sans-serif" font-weight="bold" text-anchor="middle">${encodeURIComponent(publisher.toUpperCase())}</text><text x="150" y="210" fill="%23ffffff" font-size="22" font-family="sans-serif" font-weight="bold" text-anchor="middle">${encodeURIComponent(title.slice(0, 24))}</text><text x="150" y="240" fill="%23e2e8f0" font-size="16" font-family="sans-serif" text-anchor="middle">${encodeURIComponent(title.slice(24, 48))}</text><rect x="50" y="320" width="200" height="40" rx="8" fill="%23ffffff" fill-opacity="0.2"/><text x="150" y="346" fill="%23ffffff" font-size="14" font-family="sans-serif" font-weight="bold" text-anchor="middle">ARCADIA COMICS</text></svg>`
+  const bg = publisher.includes('Marvel')
+    ? '#b91c1c'
+    : publisher.includes('DC')
+    ? '#1d4ed8'
+    : publisher.includes('Kodansha')
+    ? '#7c2d12'
+    : publisher.includes('Hakusensha')
+    ? '#4c1d95'
+    : '#1e293b'
+
+  return `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420"><rect width="300" height="420" fill="${encodeURIComponent(bg)}"/><text x="150" y="70" fill="%23facc15" font-size="18" font-family="sans-serif" font-weight="bold" text-anchor="middle">${encodeURIComponent(publisher.toUpperCase())}</text><text x="150" y="200" fill="%23ffffff" font-size="20" font-family="sans-serif" font-weight="bold" text-anchor="middle">${encodeURIComponent(title.slice(0, 24))}</text><text x="150" y="230" fill="%23e2e8f0" font-size="15" font-family="sans-serif" text-anchor="middle">${encodeURIComponent(title.slice(24, 48))}</text><rect x="50" y="320" width="200" height="40" rx="8" fill="%23ffffff" fill-opacity="0.2"/><text x="150" y="346" fill="%23ffffff" font-size="14" font-family="sans-serif" font-weight="bold" text-anchor="middle">ARCADIA COMICS</text></svg>`
 }
