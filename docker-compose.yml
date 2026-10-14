@@ -117,7 +117,8 @@ services:
       context: ./Frontend/Arcadia-FrontEnd-Clientes
       args:
         - VITE_API_GATEWAY_URL=https://arcadia-comics.duckdns.org
-        - VITE_LOGIN_URL=http://100.48.238.112:5173
+        - VITE_LOGIN_URL=https://arcadia-comics.duckdns.org/login/
+        - VITE_ADMIN_URL=https://arcadia-comics.duckdns.org/admin/
     container_name: frontend-clientes
     restart: unless-stopped
     ports:
@@ -128,8 +129,8 @@ services:
       context: ./Frontend/Arcadia-FrontEnd-Login
       args:
         - VITE_API_GATEWAY_URL=https://arcadia-comics.duckdns.org
-        - VITE_LOGIN_URL=http://100.48.238.112:5173
-        - VITE_ADMIN_URL=http://100.48.238.112:5174
+        - VITE_LOGIN_URL=https://arcadia-comics.duckdns.org/login/
+        - VITE_ADMIN_URL=https://arcadia-comics.duckdns.org/admin/
         - VITE_CLIENTES_URL=https://arcadia-comics.duckdns.org
     container_name: frontend-login
     restart: unless-stopped
