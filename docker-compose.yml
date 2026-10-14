@@ -132,6 +132,9 @@ services:
         - VITE_LOGIN_URL=https://arcadia-comics.duckdns.org/login/
         - VITE_ADMIN_URL=https://arcadia-comics.duckdns.org/admin/
         - VITE_CLIENTES_URL=https://arcadia-comics.duckdns.org
+        - VITE_CLIENT_ID=55611909-8d64-41ee-90b6-2a89b026fd4e
+        - VITE_TENANT_ID=b06eec4f-9d74-498c-8a73-b5f5eec5479f
+        - VITE_REDIRECT_URI=https://arcadia-comics.duckdns.org/login/
     container_name: frontend-login
     restart: unless-stopped
     ports:

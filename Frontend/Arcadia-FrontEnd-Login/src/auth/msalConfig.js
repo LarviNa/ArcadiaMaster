@@ -3,8 +3,11 @@ import { BrowserCacheLocation, LogLevel } from '@azure/msal-browser'
 const clientId = import.meta.env.VITE_CLIENT_ID ?? ''
 const tenantId = import.meta.env.VITE_TENANT_ID ?? ''
 const redirectUri =
-  import.meta.env.VITE_REDIRECT_URI ??
-  (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173')
+  typeof window !== 'undefined'
+    ? (window.location.port === '5173'
+        ? window.location.origin
+        : (import.meta.env.VITE_REDIRECT_URI || `${window.location.origin}/login/`))
+    : (import.meta.env.VITE_REDIRECT_URI || 'http://localhost:5173')
 
 /** true si hay IDs reales (no vacíos ni placeholders REEMPLAZAR_). */
 export const isAuthConfigured =
