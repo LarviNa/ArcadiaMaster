@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import ComicDetail from './pages/ComicDetail'
 import Cart from './pages/Cart'
 import { CartProvider } from './context/CartContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 function App() {
   const [searchParams] = useSearchParams()
@@ -25,19 +26,21 @@ function App() {
   }, [searchParams, navigate])
 
   return (
-    <CartProvider>
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/comic/:id" element={<ComicDetail />} />
-            <Route path="/cart" element={<Cart />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </CartProvider>
+    <ThemeProvider>
+      <CartProvider>
+        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors duration-200">
+          <Header />
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/comic/:id" element={<ComicDetail />} />
+              <Route path="/cart" element={<Cart />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </CartProvider>
+    </ThemeProvider>
   )
 }
 

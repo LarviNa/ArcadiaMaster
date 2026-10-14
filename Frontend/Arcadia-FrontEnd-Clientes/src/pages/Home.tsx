@@ -118,14 +118,14 @@ const Home = () => {
     const isOutOfStock = currentStock <= 0
     const publisherColor =
       comic.publisher.includes('Marvel')
-        ? 'bg-red-100 text-red-800'
+        ? 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-300'
         : comic.publisher.includes('DC')
-        ? 'bg-blue-100 text-blue-800'
-        : 'bg-emerald-100 text-emerald-800'
+        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300'
+        : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
 
     return (
-      <div className={`card overflow-hidden group flex flex-col justify-between border ${isOutOfStock ? 'border-red-300 bg-red-50/20 shadow-sm' : 'border-gray-200 hover:border-primary-400 hover:shadow-xl'} transition-all duration-300`}>
-        <div className="relative overflow-hidden bg-gray-100 aspect-[3/4]">
+      <div className={`card overflow-hidden group flex flex-col justify-between border ${isOutOfStock ? 'border-red-300 dark:border-red-900/60 bg-red-50/20 dark:bg-red-950/20 shadow-sm' : 'border-gray-200 dark:border-slate-700 hover:border-primary-400 dark:hover:border-primary-500 hover:shadow-xl'} transition-all duration-300`}>
+        <div className="relative overflow-hidden bg-gray-100 dark:bg-slate-900 aspect-[3/4]">
           <img
             src={comic.coverImage}
             alt={comic.title}
@@ -136,13 +136,13 @@ const Home = () => {
             className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${isOutOfStock ? 'grayscale opacity-75' : ''}`}
           />
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <span className="bg-red-600 text-white font-black text-xs uppercase px-3 py-1 rounded-full shadow-lg tracking-wider border border-white/30">
                 Agotado (0)
               </span>
             </div>
           )}
-          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 shadow-sm">
+          <div className="absolute top-2 right-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm rounded-full p-1.5 shadow-sm">
             <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
           </div>
           <div className="absolute bottom-2 left-2 flex gap-1">
@@ -154,33 +154,33 @@ const Home = () => {
 
         <div className="p-4 flex flex-col flex-1 justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-slate-400 mb-1">
               <span>{comic.genre}</span>
               {isOutOfStock ? (
-                <span className="font-bold text-red-700 bg-red-100 border border-red-300 px-2 py-0.5 rounded text-[11px] animate-pulse">
+                <span className="font-bold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-800 px-2 py-0.5 rounded text-[11px] animate-pulse">
                   Stock: 0 (Agotado)
                 </span>
               ) : (
-                <span className="font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-[11px]">
+                <span className="font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded text-[11px]">
                   Stock: {currentStock}
                 </span>
               )}
             </div>
-            <h3 className="font-bold text-gray-900 text-base mb-1 line-clamp-1 group-hover:text-primary-600 transition-colors">
+            <h3 className="font-bold text-gray-900 dark:text-slate-100 text-base mb-1 line-clamp-1 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
               {comic.title}
             </h3>
-            <p className="text-gray-500 text-xs mb-3 line-clamp-1">Por {comic.author}</p>
+            <p className="text-gray-500 dark:text-slate-400 text-xs mb-3 line-clamp-1">Por {comic.author}</p>
           </div>
 
           <div>
             {feedback && (
-              <div className="mb-2 p-1.5 bg-red-50 border border-red-200 text-red-700 text-[11px] font-bold text-center rounded">
+              <div className="mb-2 p-1.5 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-[11px] font-bold text-center rounded">
                 {feedback}
               </div>
             )}
             <div className="flex items-baseline justify-between mb-3">
-              <span className="text-xl font-extrabold text-primary-600">{formatPriceCLP(comic.price)}</span>
-              <span className="text-xs text-gray-400 line-through">
+              <span className="text-xl font-extrabold text-primary-600 dark:text-primary-400">{formatPriceCLP(comic.price)}</span>
+              <span className="text-xs text-gray-400 dark:text-slate-500 line-through">
                 {formatPriceCLP(Math.round(comic.price * 1.25))}
               </span>
             </div>
@@ -197,7 +197,7 @@ const Home = () => {
                 disabled={isOutOfStock}
                 className={`p-2 rounded-lg font-medium text-xs transition-colors flex items-center justify-center ${
                   isOutOfStock
-                    ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed opacity-90'
+                    ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 cursor-not-allowed opacity-90'
                     : isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
@@ -205,7 +205,7 @@ const Home = () => {
                 title={isOutOfStock ? 'Producto Agotado (Stock: 0)' : 'Añadir al Carrito'}
               >
                 {isOutOfStock ? (
-                  <span className="text-[10px] font-bold px-1 text-red-600">Agotado</span>
+                  <span className="text-[10px] font-bold px-1 text-red-600 dark:text-red-400">Agotado</span>
                 ) : isAdded ? (
                   <Check className="h-4 w-4" />
                 ) : (
@@ -227,8 +227,8 @@ const Home = () => {
     const isOutOfStock = currentStock <= 0
 
     return (
-      <div className={`card p-4 flex flex-col sm:flex-row gap-4 border ${isOutOfStock ? 'border-red-300 bg-red-50/20' : 'border-gray-200 hover:border-primary-300'} transition-all`}>
-        <div className="w-full sm:w-28 h-40 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden relative">
+      <div className={`card p-4 flex flex-col sm:flex-row gap-4 border ${isOutOfStock ? 'border-red-300 dark:border-red-900/60 bg-red-50/20 dark:bg-red-950/20' : 'border-gray-200 dark:border-slate-700 hover:border-primary-300 dark:hover:border-primary-500'} transition-all`}>
+        <div className="w-full sm:w-28 h-40 flex-shrink-0 bg-gray-100 dark:bg-slate-900 rounded-lg overflow-hidden relative">
           <img
             src={comic.coverImage}
             alt={comic.title}
@@ -239,7 +239,7 @@ const Home = () => {
             className={`w-full h-full object-cover ${isOutOfStock ? 'grayscale opacity-75' : ''}`}
           />
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
               <span className="bg-red-600 text-white font-bold text-[10px] uppercase px-2 py-0.5 rounded shadow">
                 Agotado
               </span>
@@ -249,30 +249,30 @@ const Home = () => {
         <div className="flex-1 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-0.5 rounded">
+              <span className="text-xs font-bold text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-950/60 px-2 py-0.5 rounded">
                 {comic.publisher}
               </span>
-              <span className="text-xs text-gray-500">• {comic.genre}</span>
+              <span className="text-xs text-gray-500 dark:text-slate-400">• {comic.genre}</span>
               {isOutOfStock ? (
-                <span className="text-xs font-bold text-red-700 bg-red-100 border border-red-300 px-2.5 py-0.5 rounded ml-auto flex items-center gap-1">
+                <span className="text-xs font-bold text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-800 px-2.5 py-0.5 rounded ml-auto flex items-center gap-1">
                   🔴 Stock: 0 (Agotado)
                 </span>
               ) : (
-                <span className="text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded ml-auto">
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded ml-auto">
                   Stock: {currentStock} unid.
                 </span>
               )}
             </div>
-            <h3 className="font-bold text-lg text-gray-900 mb-1">{comic.title}</h3>
-            <p className="text-gray-600 text-sm mb-2">Por {comic.author}</p>
-            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{comic.description}</p>
+            <h3 className="font-bold text-lg text-gray-900 dark:text-slate-100 mb-1">{comic.title}</h3>
+            <p className="text-gray-600 dark:text-slate-400 text-sm mb-2">Por {comic.author}</p>
+            <p className="text-gray-600 dark:text-slate-300 text-sm mb-3 line-clamp-2">{comic.description}</p>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-slate-700">
             <div>
-              <span className="text-2xl font-bold text-primary-600">{formatPriceCLP(comic.price)}</span>
+              <span className="text-2xl font-bold text-primary-600 dark:text-primary-400">{formatPriceCLP(comic.price)}</span>
               {feedback && (
-                <p className="text-xs text-red-700 font-bold mt-0.5">{feedback}</p>
+                <p className="text-xs text-red-700 dark:text-red-400 font-bold mt-0.5">{feedback}</p>
               )}
             </div>
             <div className="flex gap-2">
@@ -284,7 +284,7 @@ const Home = () => {
                 disabled={isOutOfStock}
                 className={`py-2 px-4 rounded-lg font-medium text-xs flex items-center gap-1.5 transition-colors ${
                   isOutOfStock
-                    ? 'bg-red-50 text-red-600 border border-red-200 cursor-not-allowed'
+                    ? 'bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 cursor-not-allowed'
                     : isAdded
                     ? 'bg-emerald-600 text-white'
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
@@ -348,17 +348,17 @@ const Home = () => {
       </div>
 
       {/* Catalog Control Bar */}
-      <div id="catalogo" className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-6">
+      <div id="catalogo" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 mb-6 transition-colors">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           {/* Search Input */}
           <div className="relative w-full md:w-80">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-slate-500" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar título, autor o editorial..."
-              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors"
             />
           </div>
 
@@ -367,7 +367,7 @@ const Home = () => {
             <select
               value={selectedGenre}
               onChange={(e) => setSelectedGenre(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors"
             >
               <option value="all">Todos los Géneros</option>
               {genres
@@ -382,7 +382,7 @@ const Home = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+              className="px-3 py-2 text-sm border border-gray-300 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 transition-colors"
             >
               <option value="title">Ordenar por Título</option>
               <option value="price-low">Precio: Menor a Mayor</option>
@@ -390,11 +390,11 @@ const Home = () => {
               <option value="date">Más Recientes</option>
             </select>
 
-            <div className="flex gap-1 border border-gray-200 p-1 rounded-xl bg-gray-50">
+            <div className="flex gap-1 border border-gray-200 dark:border-slate-700 p-1 rounded-xl bg-gray-50 dark:bg-slate-900">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-1.5 rounded-lg transition-colors ${
-                  viewMode === 'grid' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-900'
+                  viewMode === 'grid' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
                 }`}
                 title="Vista Cuadrícula"
               >
@@ -403,7 +403,7 @@ const Home = () => {
               <button
                 onClick={() => setViewMode('list')}
                 className={`p-1.5 rounded-lg transition-colors ${
-                  viewMode === 'list' ? 'bg-white shadow-sm text-primary-600' : 'text-gray-500 hover:text-gray-900'
+                  viewMode === 'list' ? 'bg-white dark:bg-slate-800 shadow-sm text-primary-600 dark:text-primary-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100'
                 }`}
                 title="Vista Lista"
               >
@@ -416,13 +416,13 @@ const Home = () => {
 
       {/* Status Bar */}
       <div className="flex items-center justify-between mb-6 px-1">
-        <p className="text-sm text-gray-500">
-          Mostrando <span className="font-semibold text-gray-800">{filteredAndSortedComics.length}</span> de{' '}
-          <span className="font-semibold text-gray-800">{comics.length}</span> cómics disponibles
+        <p className="text-sm text-gray-500 dark:text-slate-400">
+          Mostrando <span className="font-semibold text-gray-800 dark:text-slate-200">{filteredAndSortedComics.length}</span> de{' '}
+          <span className="font-semibold text-gray-800 dark:text-slate-200">{comics.length}</span> cómics disponibles
         </p>
 
         {isUsingFallback && (
-          <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 text-amber-700 border border-amber-200/80 px-2.5 py-1 rounded-full font-medium">
+          <span className="inline-flex items-center gap-1.5 text-xs bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800 px-2.5 py-1 rounded-full font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
             Catálogo Local Activo (12 títulos)
           </span>
@@ -431,15 +431,15 @@ const Home = () => {
 
       {/* Grid / List Content */}
       {loading ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-gray-200">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-3"></div>
-          <p className="text-gray-500 text-sm">Cargando catálogo de cómics...</p>
+        <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 transition-colors">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400 mx-auto mb-3"></div>
+          <p className="text-gray-500 dark:text-slate-400 text-sm">Cargando catálogo de cómics...</p>
         </div>
       ) : filteredAndSortedComics.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-gray-200">
+        <div className="text-center py-16 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 transition-colors">
           <div className="text-4xl mb-3">🔍</div>
-          <h3 className="text-lg font-bold text-gray-800 mb-1">No se encontraron cómics</h3>
-          <p className="text-gray-500 text-sm mb-4">Intenta cambiar los términos de búsqueda o el filtro de género.</p>
+          <h3 className="text-lg font-bold text-gray-800 dark:text-slate-100 mb-1">No se encontraron cómics</h3>
+          <p className="text-gray-500 dark:text-slate-400 text-sm mb-4">Intenta cambiar los términos de búsqueda o el filtro de género.</p>
           <button
             onClick={() => {
               setSearchTerm('')
