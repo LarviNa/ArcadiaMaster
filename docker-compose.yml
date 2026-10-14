@@ -4,6 +4,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: arcadia-mysql
+    restart: unless-stopped
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_ROOT_PASSWORD: ""
@@ -21,6 +22,7 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: arcadia-rabbitmq
+    restart: unless-stopped
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -33,6 +35,7 @@ services:
   ms-usuarios:
     build: ./backend/ms-usuarios
     container_name: ms-usuarios
+    restart: unless-stopped
     environment:
       - DB_HOST=mysql
       - DB_USER=root
@@ -46,6 +49,7 @@ services:
   ms-comics:
     build: ./backend/ms-comics
     container_name: ms-comics
+    restart: unless-stopped
     environment:
       - DB_HOST=mysql
       - DB_USER=root
@@ -59,6 +63,7 @@ services:
   ms-ventas:
     build: ./backend/ms-ventas
     container_name: ms-ventas
+    restart: unless-stopped
     environment:
       - DB_URL=jdbc:mysql://mysql:3306/arcadia_ventas?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
       - DB_USER=root
@@ -71,6 +76,7 @@ services:
       - MAIL_PORT=2525
       - MAIL_USER=fb3add333c003d
       - MAIL_PASS=e26bdfe96036dd
+      - MS_COMICS_URL=http://ms-comics:8081
     ports:
       - "8082:8082"
     depends_on:
@@ -82,6 +88,7 @@ services:
   api-gateway:
     build: ./backend/api-gateway
     container_name: api-gateway
+    restart: unless-stopped
     environment:
       - MS_USUARIOS_URL=http://ms-usuarios:8085
       - MS_COMICS_URL=http://ms-comics:8081
@@ -101,6 +108,7 @@ services:
         - VITE_COMICS_API_URL=http://100.48.238.112:8083/api/comics
         - VITE_VENTAS_API_URL=http://100.48.238.112:8083/orders
     container_name: frontend-admin
+    restart: unless-stopped
     ports:
       - "5174:80"
 
@@ -111,6 +119,7 @@ services:
         - VITE_API_GATEWAY_URL=http://100.48.238.112:8083
         - VITE_LOGIN_URL=http://100.48.238.112:5173
     container_name: frontend-clientes
+    restart: unless-stopped
     ports:
       - "3001:80"
 
@@ -123,6 +132,7 @@ services:
         - VITE_ADMIN_URL=http://100.48.238.112:5174
         - VITE_CLIENTES_URL=http://100.48.238.112:3001
     container_name: frontend-login
+    restart: unless-stopped
     ports:
       - "5173:80"
 

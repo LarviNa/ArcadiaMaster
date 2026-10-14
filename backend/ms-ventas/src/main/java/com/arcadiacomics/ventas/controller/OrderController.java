@@ -18,9 +18,11 @@ import java.util.UUID;
 public class OrderController {
 
     private final OrderService orderService;
+    private final com.arcadiacomics.ventas.consumer.StockUpdateConsumer stockUpdateConsumer;
 
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, com.arcadiacomics.ventas.consumer.StockUpdateConsumer stockUpdateConsumer) {
         this.orderService = orderService;
+        this.stockUpdateConsumer = stockUpdateConsumer;
     }
 
     @PostMapping("/checkout")
@@ -51,6 +53,21 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getAllOrders() {
         return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
+    @GetMapping("/stock")
+    public ResponseEntity<java.util.Map<String, Integer>> getAllStocks() {
+        return ResponseEntity.ok(stockUpdateConsumer.getTodosLosStocks());
+    }
+
+    @GetMapping("/stock/{comicId}")
+    public ResponseEntity<java.util.Map<String, Object>> getStockByComic(@PathVariable String comicId) {
+        int stock = stockUpdateConsumer.getStockActual(comicId);
+        return ResponseEntity.ok(java.util.Map.of(
+                "comicId", comicId,
+                "stockDisponible", stock,
+                "mensaje", "Stock actualizado por cola RabbitMQ ('cola.ventas.stock')"
+        ));
     }
 
     @GetMapping("/health")

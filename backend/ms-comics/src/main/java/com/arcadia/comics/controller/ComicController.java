@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/comics")
+@CrossOrigin(origins = "*")
 public class ComicController {
 
     private final ComicService comicService;
@@ -52,6 +53,24 @@ public class ComicController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    @PatchMapping("/{id}/stock")
+    public ResponseEntity<Comic> deductStockPatch(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "1") int quantity) {
+        return comicService.deductStock(id, quantity)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    }
+
+    @PostMapping("/{id}/descontar")
+    public ResponseEntity<Comic> deductStockPost(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "1") int cantidad) {
+        return comicService.deductStock(id, cantidad)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping("/health")

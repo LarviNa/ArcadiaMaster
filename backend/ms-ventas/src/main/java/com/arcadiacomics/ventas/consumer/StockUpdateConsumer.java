@@ -6,8 +6,12 @@ import com.arcadiacomics.ventas.dto.VentaItemDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.net.HttpURLConnection;
+import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,15 +20,19 @@ import java.util.concurrent.ConcurrentHashMap;
  * Responsabilidades:
  * 1. Escuchar los eventos 'venta.confirmada' de compras en la tienda.
  * 2. Procesar el descuento de inventario por cada cómic del pedido.
- * 3. Mantener registro de auditoría y persistencia/simulación del inventario disponible.
- * 4. Manejo de excepciones y trazabilidad con SLF4J.
+ * 3. Persistir la rebaja de stock en la base de datos MySQL (ms-comics).
+ * 4. Mantener registro de auditoría y fallback de alta disponibilidad.
+ * 5. Manejo de excepciones y trazabilidad con SLF4J.
  */
 @Service
 public class StockUpdateConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(StockUpdateConsumer.class);
 
-    // Registro en memoria de inventario actualizado (simulación y trazabilidad de persistencia)
+    @Value("${MS_COMICS_URL:${ms.comics.url:http://ms-comics:8081}}")
+    private String msComicsUrl;
+
+    // Registro en memoria de inventario actualizado (simulación, trazabilidad y fallback resiliente)
     private final Map<String, Integer> stockMockCache = new ConcurrentHashMap<>();
 
     public StockUpdateConsumer() {
@@ -76,6 +84,9 @@ public class StockUpdateConsumer {
                 log.info("      - Cantidad comprada: {}", cantidadComprada);
                 log.info("      - Stock previo: {}", stockActual);
                 log.info("      - Nuevo stock disponible: {}", nuevoStock);
+
+                // Persistir el descuento de stock directamente en MySQL a través de ms-comics
+                sincronizarStockConMsComics(comicId, cantidadComprada);
             }
 
             log.info("✅ [COLA STOCK] Inventario actualizado exitosamente para la orden '{}'", venta.getIdVenta());
@@ -89,9 +100,39 @@ public class StockUpdateConsumer {
     }
 
     /**
+     * Envía petición HTTP POST a ms-comics para persistir el descuento de stock en MySQL.
+     */
+    private void sincronizarStockConMsComics(String comicId, int cantidad) {
+        try {
+            String endpoint = msComicsUrl + "/api/comics/" + comicId + "/descontar?cantidad=" + cantidad;
+            URI uri = URI.create(endpoint);
+            HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+            conn.setRequestMethod("POST");
+            conn.setConnectTimeout(2500);
+            conn.setReadTimeout(2500);
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode >= 200 && responseCode < 300) {
+                log.info("   💾 [PERSISTENCIA MYSQL] Stock descontado y persistido en MySQL (ms-comics) para cómic ID: {}", comicId);
+            } else {
+                log.warn("   ⚠️ [PERSISTENCIA MYSQL] ms-comics respondió HTTP {} al descontar stock para cómic ID: {}", responseCode, comicId);
+            }
+        } catch (Exception e) {
+            log.warn("   ℹ️ [MODO RESILIENTE] No se pudo conectar directamente con ms-comics ({}: {}). El stock fue actualizado en la persistencia local de la cola.", msComicsUrl, e.getMessage());
+        }
+    }
+
+    /**
      * Consulta el stock disponible en memoria para un cómic específico.
      */
     public int getStockActual(String comicId) {
         return stockMockCache.getOrDefault(comicId, 10);
+    }
+
+    /**
+     * Retorna el mapa completo de stock para inspección en tiempo real.
+     */
+    public Map<String, Integer> getTodosLosStocks() {
+        return Collections.unmodifiableMap(stockMockCache);
     }
 }
